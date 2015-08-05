@@ -38,11 +38,12 @@
 pro mmrs_siaf,channel,rootdir=rootdir
 
 if (~keyword_set(rootdir)) then $
-  rootdir='/Users/dlaw/jwst/mirimrs/distfiles/cdp4/'
+  rootdir='~/jwst/trunk/mirimrs/distfiles/cdp4/'
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then
 ; ch=1 and sband='A'
+channel=strupcase(channel)
 ch=fix(strmid(channel,0,1))
 sband=strmid(channel,1,1)
 
@@ -119,6 +120,18 @@ for i=0,nslices-1 do begin
   beta_corners[3,i]=beta1[i]
 endfor
 
+; Compute corner coordinates for an inscribed footprint
+inscr_alpha=fltarr(4)
+inscr_beta=fltarr(4)
+inscr_alpha[0]=max(alpha_corners[0,*])
+inscr_alpha[1]=max(alpha_corners[0,*])
+inscr_alpha[2]=min(alpha_corners[2,*])
+inscr_alpha[3]=min(alpha_corners[3,*])
+inscr_beta[0]=min(beta_corners)
+inscr_beta[1]=max(beta_corners)
+inscr_beta[2]=max(beta_corners)
+inscr_beta[3]=min(beta_corners)
+
 ; Convert to v2,v3 corner coordinates
 v2_corners=fltarr(4,nslices)
 v3_corners=fltarr(4,nslices)
@@ -131,8 +144,18 @@ for i=0,nslices-1 do begin
   endfor
 endfor
 
+; Convert corners of inscribed box
+inscr_v2=conv_v2.(1)+conv_v2.(2)*inscr_alpha + $
+      conv_v2.(3)*inscr_beta + conv_v2.(4)*inscr_alpha*inscr_beta
+inscr_v3=conv_v3.(1)+conv_v3.(2)*inscr_alpha + $
+      conv_v3.(3)*inscr_beta + conv_v3.(4)*inscr_alpha*inscr_beta
+
 ; Print all of the corner coordinates to a file
 printf,lun,'# SliceName SliceNum a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
+printf,lun,channel,'   -1',inscr_alpha[0],inscr_beta[0],inscr_v2[0],inscr_v3[0],$
+  inscr_alpha[1],inscr_beta[1],inscr_v2[1],inscr_v3[1],$
+  inscr_alpha[2],inscr_beta[2],inscr_v2[2],inscr_v3[2],$
+  inscr_alpha[3],inscr_beta[3],inscr_v2[3],inscr_v3[3]
 for i=0,nslices-1 do begin
   printf,lun,slicename[i],slicenum[i],$
     alpha_corners[0,i],beta_corners[0,i],v2_corners[0,i],v3_corners[0,i],$
@@ -150,8 +173,9 @@ plot,alpha_corners[*,0],beta_corners[*,0],/nodata,xrange=[min(alpha_corners),max
 seed=56
 colors=randomu(seed,nslices)*250
 for i=0,nslices-1 do begin
-  oplot,alpha_corners[*,i],beta_corners[*,i],color=colors[i]
+  oplot,[alpha_corners[*,i],alpha_corners[0,i]],[beta_corners[*,i],beta_corners[0,i]],color=colors[i]
 endfor
+oplot,inscr_alpha,inscr_beta
 device,/close
 
 ; Plot the corners in v2,v3
@@ -160,8 +184,9 @@ device,filename=plotname,/color
 loadct,39
 plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[min(v2_corners),max(v2_corners)],yrange=[min(v3_corners),max(v3_corners)],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
 for i=0,nslices-1 do begin
-  oplot,v2_corners[*,i],v3_corners[*,i],color=colors[i]
+  oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
 endfor
+oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
 device,/close
 set_plot,'x'
 
