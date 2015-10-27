@@ -32,7 +32,8 @@
 ; INTERNAL SUPPORT ROUTINES:
 ;
 ; REVISION HISTORY:
-;   30-July-2015  Written by David Law (dlaw@stsci.edu)
+;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
+;   27-Oct-2015  Add converstion to REAL V2,V3 (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -86,6 +87,8 @@ v2=conv_v2.(1)+conv_v2.(2)*adbl + $
       conv_v2.(3)*bdbl + conv_v2.(4)*adbl*bdbl
 v3=conv_v3.(1)+conv_v3.(2)*adbl + $
       conv_v3.(3)*bdbl + conv_v3.(4)*adbl*bdbl
+
+v3=-(v3 + 7.8)
 
 return
 end

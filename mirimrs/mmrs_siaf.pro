@@ -53,18 +53,18 @@ openw,lun,outfile,/get_lun,width=250
 
 ; Determine input reference FITS file
 case channel of
-  '1A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_04.02.00.fits'
-  '1B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_04.02.00.fits'
-  '1C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_04.02.00.fits'
-  '2A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_04.02.00.fits'
-  '2B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_04.02.00.fits'
-  '2C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_04.02.00.fits'
-  '3A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_04.02.00.fits'
-  '3B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_04.02.00.fits'
-  '3C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_04.02.00.fits'
-  '4A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_04.02.00.fits'
-  '4B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_04.02.00.fits'
-  '4C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_04.02.00.fits'
+  '1A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_5B.02.00.fits'
+  '1B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_5B.02.00.fits'
+  '1C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_5B.02.00.fits'
+  '2A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_5B.02.00.fits'
+  '2B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_5B.02.00.fits'
+  '2C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_5B.02.00.fits'
+  '3A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_5B.02.00.fits'
+  '3B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_5B.02.00.fits'
+  '3C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_5B.02.00.fits'
+  '4A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_5B.02.00.fits'
+  '4B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_5B.02.00.fits'
+  '4C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_5B.02.00.fits'
   else: begin
     print,'Invalid band'
     return
@@ -81,16 +81,6 @@ dbeta=fxpar(hdr,'B_DEL'+strcompress(string(ch),/remove_all))
 ; Read FoV alpha boundaries
 extname='FoV-CH'+strcompress(string(ch),/remove_all)
 alphalimits=mrdfits(reffile,extname)
-
-; Read alpha,beta -> v2,v3 table
-convtable=mrdfits(reffile,'al,be->V2/V3')
-; Determine which rows we need
-v2index=where(strcompress(convtable.(0),/remove_all) eq 'T_CH'+channel+',V2')
-v3index=where(strcompress(convtable.(0),/remove_all) eq 'T_CH'+channel+',V3')
-if ((v2index lt 0)or(v3index lt 0)) then exit
-; Trim to relevant v2, v3 rows for this channel
-conv_v2=convtable[v2index]
-conv_v3=convtable[v3index]
 
 ; Determine number of slices
 nslices=n_elements(alphalimits)
@@ -132,23 +122,11 @@ inscr_beta[1]=max(beta_corners)
 inscr_beta[2]=max(beta_corners)
 inscr_beta[3]=min(beta_corners)
 
-; Convert to v2,v3 corner coordinates
-v2_corners=fltarr(4,nslices)
-v3_corners=fltarr(4,nslices)
-for i=0,nslices-1 do begin
-  for j=0,3 do begin
-    v2_corners[j,i]=conv_v2.(1)+conv_v2.(2)*alpha_corners[j,i] + $
-      conv_v2.(3)*beta_corners[j,i] + conv_v2.(4)*alpha_corners[j,i]*beta_corners[j,i]
-   v3_corners[j,i]=conv_v3.(1)+conv_v3.(2)*alpha_corners[j,i] + $
-      conv_v3.(3)*beta_corners[j,i] + conv_v3.(4)*alpha_corners[j,i]*beta_corners[j,i]
-  endfor
-endfor
 
-; Convert corners of inscribed box
-inscr_v2=conv_v2.(1)+conv_v2.(2)*inscr_alpha + $
-      conv_v2.(3)*inscr_beta + conv_v2.(4)*inscr_alpha*inscr_beta
-inscr_v3=conv_v3.(1)+conv_v3.(2)*inscr_alpha + $
-      conv_v3.(3)*inscr_beta + conv_v3.(4)*inscr_alpha*inscr_beta
+; Convert to v2,v3 corner coordinates
+mmrs_abtov2v3,alpha_corners,beta_corners,v2_corners,v3_corners,channel,refdir=refdir
+; Convert to v2,v3 inscribed box
+mmrs_abtov2v3,inscr_alpha,inscr_beta,inscr_v2,inscr_v3,channel,refdir=refdir
 
 ; Print all of the corner coordinates to a file
 printf,lun,'# SliceName SliceNum a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
@@ -182,7 +160,7 @@ device,/close
 plotname='siaf_'+channel+'v2v3.ps'
 device,filename=plotname,/color
 loadct,39
-plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[min(v2_corners),max(v2_corners)],yrange=[min(v3_corners),max(v3_corners)],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
+plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[max(v2_corners),min(v2_corners)],yrange=[min(v3_corners),max(v3_corners)],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
 for i=0,nslices-1 do begin
   oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
 endfor
