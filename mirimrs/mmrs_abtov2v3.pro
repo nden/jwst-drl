@@ -39,7 +39,7 @@
 pro mmrs_abtov2v3,a,b,v2,v3,channel,refdir=refdir
 
 if (~keyword_set(refdir)) then $
-  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirimrs/distfiles/cdp4/')
+  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirimrs/distfiles/cdp5b/')
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then
@@ -53,18 +53,18 @@ bdbl=double(b)
 
 ; Determine input reference FITS file
 case channel of
-  '1A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_04.02.00.fits'
-  '1B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_04.02.00.fits'
-  '1C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_04.02.00.fits'
-  '2A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_04.02.00.fits'
-  '2B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_04.02.00.fits'
-  '2C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_04.02.00.fits'
-  '3A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_04.02.00.fits'
-  '3B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_04.02.00.fits'
-  '3C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_04.02.00.fits'
-  '4A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_04.02.00.fits'
-  '4B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_04.02.00.fits'
-  '4C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_04.02.00.fits'
+  '1A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_5B.02.00.fits'
+  '1B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_5B.02.00.fits'
+  '1C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_5B.02.00.fits'
+  '2A': reffile='MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_5B.02.00.fits'
+  '2B': reffile='MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_5B.02.00.fits'
+  '2C': reffile='MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_5B.02.00.fits'
+  '3A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_5B.02.00.fits'
+  '3B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_5B.02.00.fits'
+  '3C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_5B.02.00.fits'
+  '4A': reffile='MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_5B.02.00.fits'
+  '4B': reffile='MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_5B.02.00.fits'
+  '4C': reffile='MIRI_FM_MIRIFULONG_34LONG_DISTORTION_5B.02.00.fits'
   else: begin
     print,'Invalid band'
     return
