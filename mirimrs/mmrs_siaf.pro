@@ -31,7 +31,8 @@
 ; INTERNAL SUPPORT ROUTINES:
 ;
 ; REVISION HISTORY:
-;   30-July-2015  Written by David Law (dlaw@stsci.edu)
+;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
+;   27-Oct-2015  Use library routines (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 

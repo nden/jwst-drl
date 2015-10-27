@@ -26,14 +26,15 @@
 ; EXAMPLES:
 ;
 ; BUGS:
-;   Current the beta values returned by this function are WRONG.
+;   Current the values returned by this function are WRONG.
 ;
 ; PROCEDURES CALLED:
 ;
 ; INTERNAL SUPPORT ROUTINES:
 ;
 ; REVISION HISTORY:
-;   30-July-2015  Written by David Law (dlaw@stsci.edu)
+;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
+;   27-Oct-2015  Use real V2, V3 (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -49,8 +50,9 @@ ch=fix(strmid(channel,0,1))
 sband=strmid(channel,1,1)
 
 ; Ensure we're not using integer inputs
+; and convert to Adrian's definition of V2, V3
 v2dbl=double(v2)
-v3dbl=double(v3)
+v3dbl=-double(v3)-7.8
 
 ; Determine input reference FITS file
 case channel of
@@ -87,6 +89,6 @@ a=conv_al.(1)+conv_al.(2)*v2dbl + $
       conv_al.(3)*v3dbl + conv_al.(4)*v2dbl*v3dbl
 b=conv_be.(1)+conv_be.(2)*v2dbl + $
       conv_be.(3)*v3dbl + conv_be.(4)*v2dbl*v3dbl
-stop
+
 return
 end
