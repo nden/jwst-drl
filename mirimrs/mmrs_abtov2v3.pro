@@ -20,6 +20,10 @@
 ;   v2      - V2 coordinate in arcmin
 ;   v3      - V3 coordinate in arcmin
 ;
+; OPTIONAL OUTPUT:
+;   XAN     - XAN coordinate in arcmin
+;   YAN     - YAN coordinate in arcmin
+;
 ; COMMENTS:
 ;   Works with CDP4 delivery files.  Inverse function is mmrs_v2v3toab.pro
 ;
@@ -33,11 +37,12 @@
 ;
 ; REVISION HISTORY:
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
-;   27-Oct-2015  Add converstion to REAL V2,V3 (D. Law)
+;   27-Oct-2015  Add conversion to REAL V2,V3 (D. Law)
+;   12-Nov-2015  Add conversion to XAN,YAN (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
-pro mmrs_abtov2v3,a,b,v2,v3,channel,refdir=refdir
+pro mmrs_abtov2v3,a,b,v2,v3,channel,refdir=refdir,xan=xan,yan=yan
 
 if (~keyword_set(refdir)) then $
   refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirimrs/distfiles/cdp5b/')
@@ -87,6 +92,9 @@ v2=conv_v2.(1)+conv_v2.(2)*adbl + $
       conv_v2.(3)*bdbl + conv_v2.(4)*adbl*bdbl
 v3=conv_v3.(1)+conv_v3.(2)*adbl + $
       conv_v3.(3)*bdbl + conv_v3.(4)*adbl*bdbl
+
+xan=v2
+yan=v3
 
 v3=-(v3 + 7.8)
 
