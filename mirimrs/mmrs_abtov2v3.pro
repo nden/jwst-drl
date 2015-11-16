@@ -38,7 +38,7 @@
 ; REVISION HISTORY:
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
 ;   27-Oct-2015  Add conversion to REAL V2,V3 (D. Law)
-;   12-Nov-2015  Add conversion to XAN,YAN (D. Law)
+;   16-Nov-2015  Add conversion to XAN,YAN (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
