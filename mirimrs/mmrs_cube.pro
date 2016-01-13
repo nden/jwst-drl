@@ -1,4 +1,4 @@
-function mmrs_cube, x, y, z, f, dim_out, rlim, sigma, scale=scale, xsquash=xsquash, ysquash=ysquash, zsquash=zsquash
+function mmrs_cube, x, y, z, f, dim_out, rlim, sigma, scale=scale, xsquash=xsquash, ysquash=ysquash, zsquash=zsquash, maskcube=maskcube
 
 if (~keyword_set(xsquash)) then xsquash=1.
 if (~keyword_set(ysquash)) then ysquash=1.
@@ -11,6 +11,8 @@ all_dim=[dim_out,ntot] ; Output X,Y,Z size, tot sample size
 
 ; Output cubes
 fcube=dblarr(dim_out)
+maskcube=intarr(dim_out)
+maskcube[*]=1
 
 ; XYZ output pixel coordinate arrays
 arr_xcoord = dindgen(dim_out[0])
@@ -79,7 +81,10 @@ for k=0,dim_out[2]-1 do begin
       else matr_norm = total(arr_weights,2)
 
       ; Flag where the normalization matrix is zero; there is no good data here
-      nodata=where(matr_norm eq 0,nnodata)
+      nodata=where(matr_norm eq 0,complement=gooddata,ncomplement=ngood,nnodata)
+      ; Mark good locations in output mask
+      if (ngood ne 0) then maskcube[gooddata,j,k]=0
+
       ; We don't want to divide by zero where there is no data; set the normalization
       ; matrix to 1 in these cases
       if (nnodata gt 0) then matr_norm[nodata]=1.
