@@ -25,7 +25,7 @@
 ;   YAN     - YAN coordinate in arcmin
 ;
 ; COMMENTS:
-;   Works with CDP4 delivery files.  Inverse function is mmrs_v2v3toab.pro
+;   Works with CDP5 delivery files.  Inverse function is mmrs_v2v3toab.pro
 ;
 ; EXAMPLES:
 ;
@@ -39,6 +39,7 @@
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
 ;   27-Oct-2015  Add conversion to REAL V2,V3 (D. Law)
 ;   16-Nov-2015  Add conversion to XAN,YAN (D. Law)
+;   24-Jan-2016  Update reference files to CDP5 (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -78,25 +79,23 @@ case channel of
 endcase
 reffile=concat_dir(refdir,reffile)
 
-; Read alpha,beta -> v2,v3 table
-convtable=mrdfits(reffile,'al,be->V2/V3')
+; Read alpha,beta -> XAN,YAN table
+convtable=mrdfits(reffile,'albe_to_XANYAN')
 ; Determine which rows we need
-v2index=where(strcompress(convtable.(0),/remove_all) eq 'T_CH'+channel+',V2')
-v3index=where(strcompress(convtable.(0),/remove_all) eq 'T_CH'+channel+',V3')
+v2index=where(strcompress(convtable.(0),/remove_all) eq 'T_CH'+channel+'_XAN')
+v3index=where(strcompress(convtable.(0),/remove_all) eq 'T_CH'+channel+'_YAN')
 if ((v2index lt 0)or(v3index lt 0)) then exit
 ; Trim to relevant v2, v3 rows for this channel
 conv_v2=convtable[v2index]
 conv_v3=convtable[v3index]
 
-v2=conv_v2.(1)+conv_v2.(2)*adbl + $
+xan=conv_v2.(1)+conv_v2.(2)*adbl + $
       conv_v2.(3)*bdbl + conv_v2.(4)*adbl*bdbl
-v3=conv_v3.(1)+conv_v3.(2)*adbl + $
+yan=conv_v3.(1)+conv_v3.(2)*adbl + $
       conv_v3.(3)*bdbl + conv_v3.(4)*adbl*bdbl
 
-xan=v2
-yan=v3
-
-v3=-(v3 + 7.8)
+v2=xan
+v3=-(yan+7.8)
 
 return
 end

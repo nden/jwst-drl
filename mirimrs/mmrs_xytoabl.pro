@@ -27,7 +27,7 @@
 ;   slicename - Slice name (e.g., 211A for ch2, slice 11, sub-band A)
 ;
 ; COMMENTS:
-;   Works with CDP4 delivery files.  Inverse function is mmrs_abtoxy.pro
+;   Works with CDP5 delivery files.  Inverse function is mmrs_abtoxy.pro
 ;   Not all input x,y can actually map to alpha,beta because some pixels
 ;   fall between slices.  alpha,beta,lambda for these are set to -999.
 ;
@@ -42,6 +42,7 @@
 ; REVISION HISTORY:
 ;   30-July-2015  Written by David Law (dlaw@stsci.edu)
 ;   30-Sep-2015   Include lambda axis (D. Law)
+;   24-Jan-2016   Update extension names for CDP5 (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -88,9 +89,9 @@ hdr=headfits(reffile)
 beta0=fxpar(hdr,'B_ZERO'+strcompress(string(ch),/remove_all))
 dbeta=fxpar(hdr,'B_DEL'+strcompress(string(ch),/remove_all))
 
-d2c_alpha=mrdfits(reffile,'Alpha-CH'+strcompress(string(ch),/remove_all))
-d2c_lambda=mrdfits(reffile,'Lambda-CH'+strcompress(string(ch),/remove_all))
-d2c_slice=mrdfits(reffile,'Slice-Number')
+d2c_alpha=mrdfits(reffile,'Alpha_CH'+strcompress(string(ch),/remove_all))
+d2c_lambda=mrdfits(reffile,'Lambda_CH'+strcompress(string(ch),/remove_all))
+d2c_slice=mrdfits(reffile,'Slice_Number')
 
 ; Define slice for these pixels
 slicenum=fix(d2c_slice[x,y])-ch*100

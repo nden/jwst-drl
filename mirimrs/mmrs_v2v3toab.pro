@@ -21,7 +21,7 @@
 ;   b       - Beta coordinate in arcsec
 ;
 ; COMMENTS:
-;   Works with CDP4 delivery files.  Inverse function is mmrs_abtov2v3.pro
+;   Works with CDP5 delivery files.  Inverse function is mmrs_abtov2v3.pro
 ;
 ; EXAMPLES:
 ;
@@ -35,6 +35,7 @@
 ; REVISION HISTORY:
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
 ;   27-Oct-2015  Use real V2, V3 (D. Law)
+;   24-Jan-2016  Update reference files to CDP5 (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -50,9 +51,9 @@ ch=fix(strmid(channel,0,1))
 sband=strmid(channel,1,1)
 
 ; Ensure we're not using integer inputs
-; and convert to Adrian's definition of V2, V3
-v2dbl=double(v2)
-v3dbl=-double(v3)-7.8
+; and convert to XAN,YAN
+xan=double(v2)
+yan=-double(v3)-7.8
 
 ; Determine input reference FITS file
 case channel of
@@ -75,20 +76,20 @@ case channel of
 endcase
 reffile=concat_dir(refdir,reffile)
 
-; Read v2,v3 -> alpha,beta table
-convtable=mrdfits(reffile,'V2/V3->al,be')
+; Read xan,yan -> alpha,beta table
+convtable=mrdfits(reffile,'XANYAN_to_albe')
 ; Determine which rows we need
-alindex=where(strcompress(convtable.(0),/remove_all) eq 'U_CH'+channel+',al')
-beindex=where(strcompress(convtable.(0),/remove_all) eq 'U_CH'+channel+',be')
+alindex=where(strcompress(convtable.(0),/remove_all) eq 'U_CH'+channel+'_al')
+beindex=where(strcompress(convtable.(0),/remove_all) eq 'U_CH'+channel+'_be')
 if ((alindex lt 0)or(beindex lt 0)) then exit
 ; Trim to relevant al, be rows for this channel
 conv_al=convtable[alindex]
 conv_be=convtable[beindex]
 
-a=conv_al.(1)+conv_al.(2)*v2dbl + $
-      conv_al.(3)*v3dbl + conv_al.(4)*v2dbl*v3dbl
-b=conv_be.(1)+conv_be.(2)*v2dbl + $
-      conv_be.(3)*v3dbl + conv_be.(4)*v2dbl*v3dbl
+a=conv_al.(1)+conv_al.(2)*xan + $
+      conv_al.(3)*yan + conv_al.(4)*xan*yan
+b=conv_be.(1)+conv_be.(2)*xan + $
+      conv_be.(3)*yan + conv_be.(4)*xan*yan
 
 return
 end

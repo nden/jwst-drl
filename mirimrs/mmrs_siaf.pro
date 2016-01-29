@@ -20,7 +20,7 @@
 ;   siaf_[channel]v2v3.ps  Plot of v2,v3 corner coordinates
 ;
 ; COMMENTS:
-;   Works with CDP4 delivery files.  Re
+;   Works with CDP5 delivery files.
 ;
 ; EXAMPLES:
 ;
@@ -33,6 +33,7 @@
 ; REVISION HISTORY:
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
 ;   27-Oct-2015  Use library routines (D. Law)
+;   24-Jan-2016  Update to CDP5 (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
