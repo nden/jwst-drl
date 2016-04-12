@@ -15,6 +15,9 @@
 ;   angle of the V3 axis measured from N towards E) of the V2,V3 coordinate
 ;   system at the reference location.
 ;
+;   Note that all v2,v3 locations are given in arcminutes while all
+;   RA,DEC information is given in degrees
+;
 ;   In normal operation this function computes and uses the full JWST
 ;   attitude matrix; it can also be run in a /local approximation
 ;   that neglects the full matrix formalism for a local approximation
@@ -29,15 +32,15 @@
 ;      RAREF=RAREF, DECREF=DECREF, ROLLREF=ROLLREF,NEWROLL=NEWROLL,/local
 ;
 ; INPUTS:
-;   v2       - v2 location in degrees (0 -> 360)
-;   v3       - v3 location in degrees (-90 -> +90)
+;   v2       - v2 location in arcminutes
+;   v3       - v3 location in arcminutes
 ;
 ; OPTIONAL INPUTS:
 ;   (note that either hdr or the 5 other keywords MUST be provided)
 ;   hdr    - JWST type FITS header containing the V2_REF, V3_REF, 
 ;            RA_REF, DEC_REF, and ROLL_REF keywords
-;   V2_REF - V2_REF location in degrees (0 -> 360) if hdr not given
-;   V3_REF - V3_REF location in degrees (-90 -> +90) if hdr not given
+;   V2_REF - V2_REF location in arcminutes if hdr not given
+;   V3_REF - V3_REF location in arcminutes if hdr not given
 ;   RA_REF - RA_REF location in degrees (0 -> 360) if hdr not given
 ;   DEC_REF - DEC_REF location in degrees (-90 -> +90) if hdr not given
 ;   ROLL_REF - ROLL_REF location in degrees (0 -> 360) if hdr not given
@@ -52,6 +55,9 @@
 ;   NEWROLL - Local roll in degrees (0 -> 360) at the location v2,v3
 ;
 ; COMMENTS:
+;   The input v2,v3 locations may be provided as vectors of values, in
+;   which case the output ra,dec,NEWROLL will also be vectors.  The
+;   current loop to do this in the full matrix transforms is a little slow.
 ;
 ; EXAMPLES:
 ;
@@ -146,18 +152,18 @@ end
 ; v3 has range -90 -> +90
 pro jwst_v2v3toradec,v2,v3,ra,dec,hdr=hdr,V2REF=V2REF,V3REF=V3REF,RAREF=RAREF,DECREF=DECREF,ROLLREF=ROLLREF,NEWROLL=NEWROLL,local=local
 
-; Read in attitude keywords and convert from degrees to radians
+; Read in attitude keywords and convert from arcminutes to radians
 ; If a header was provided start by using those attitude keywords
 if (keyword_set(hdr)) then begin
-  thisV2REF=fxpar(hdr,'V2_REF')*!DPI/180.d
-  thisV3REF=fxpar(hdr,'V3_REF')*!DPI/180.d
+  thisV2REF=fxpar(hdr,'V2_REF')/60.d*!DPI/180.d
+  thisV3REF=fxpar(hdr,'V3_REF')/60.d*!DPI/180.d
   thisRAREF=fxpar(hdr,'RA_REF')*!DPI/180.d
   thisDECREF=fxpar(hdr,'DEC_REF')*!DPI/180.d
   thisROLLREF=fxpar(hdr,'ROLL_REF')*!DPI/180.d
 endif else if (keyword_set(V2REF) and keyword_set(V3REF) and keyword_set(RAREF) and keyword_set(DECREF) and keyword_set(ROLLREF)) then begin
 ; If attitude keywords were provided, use them (overwrite header keywords)
-  thisV2REF=V2REF*!DPI/180.d
-  thisV3REF=V3REF*!DPI/180.d
+  thisV2REF=V2REF/60.d*!DPI/180.d
+  thisV3REF=V3REF/60.d*!DPI/180.d
   thisRAREF=RAREF*!DPI/180.d
   thisDECREF=DECREF*!DPI/180.d
   thisROLLREF=ROLLREF*!DPI/180.d
@@ -169,8 +175,8 @@ endelse
 
 ; If running in /local mode, use the local approximate transform
 if (keyword_set(local)) then begin
-  dv2=(v2*!PI/180.-thisV2REF)*cos(thisV3REF) ; Offset from V2REF in radians
-  dv3=v3*!PI/180.-thisV3REF ; Offset from V3REF in radians
+  dv2=(v2/60.d*!PI/180.-thisV2REF)*cos(thisV3REF) ; Offset from V2REF in radians
+  dv3=v3/60.d*!PI/180.-thisV3REF ; Offset from V3REF in radians
   dra=dv2*cos(thisROLLREF)+dv3*sin(thisROLLREF) ; Offset from RAREF in radians
   ddec=-dv2*sin(thisROLLREF)+dv3*cos(thisROLLREF) ; Offset from DECREF in radians
   ra=(thisRAREF+dra/cos(thisDECREF))*180.d/!DPI ; New RA in degrees
@@ -181,25 +187,33 @@ endif else begin
   ; Compute the JWST attitude matrix from the 5 attitude keywords
   attmat=jwst_attmatrix(thisV2REF,thisV3REF,thisRAREF,thisDECREF,thisROLLREF)
 
-  ; Compute the vector describing the input location
-  invector=[cos(v2*!DPI/180.d)*cos(v3*!DPI/180.d),sin(v2*!DPI/180.d)*cos(v3*!DPI/180.d),sin(v3*!DPI/180.d)]
+  ; Make empty vectors to hold the output ra,dec,NEWROLL
+  ra=dblarr(n_elements(v2))
+  dec=dblarr(n_elements(v2))
+  NEWROLL=dblarr(n_elements(v2))
 
-  ; Compute the output vector (cos(RA)cos(dec),sin(RA)cos(dec),sin(dec))
-  ; by applying the attitude matrix
-  outvector=attmat # invector
+  ; If the input was a vector, loop over elements in the simplest way
+  for i=0,n_elements(v2)-1 do begin
+    ; Compute the vector describing the input location
+    invector=[cos(v2[i]/60.d*!DPI/180.d)*cos(v3[i]/60.d*!DPI/180.d),sin(v2[i]/60.d*!DPI/180.d)*cos(v3[i]/60.d*!DPI/180.d),sin(v3[i]/60.d*!DPI/180.d)]
 
-  ; Split the output vector into RA and DEC components and convert
-  ; back to degrees
-  ra=atan(outvector[1],outvector[0])*180.d/!DPI
-  ; Ensure 0-360 degrees
-  if (ra lt 0.d) then ra=ra+360.d
-  dec=asin(outvector[2])*180.d/!DPI
+    ; Compute the output vector (cos(RA)cos(dec),sin(RA)cos(dec),sin(dec))
+    ; by applying the attitude matrix
+    outvector=attmat # invector
 
-  ; Compute the local roll at this location and convert
-  ; back to degrees
-  NEWROLL=jwst_localroll(v2*!DPI/180.d,v3*!DPI/180.d,attmat)*180.d/!DPI
-  ; Ensure 0-360 degrees
-  if (NEWROLL lt 0.d) then NEWROLL=NEWROLL+360.d
+    ; Split the output vector into RA and DEC components and convert
+    ; back to degrees
+    ra[i]=atan(outvector[1],outvector[0])*180.d/!DPI
+    ; Ensure 0-360 degrees
+    if (ra[i] lt 0.d) then ra[i]=ra[i]+360.d
+    dec[i]=asin(outvector[2])*180.d/!DPI
+
+    ; Compute the local roll at this location and convert
+    ; back to degrees
+    NEWROLL[i]=jwst_localroll(v2[i]/60.d*!DPI/180.d,v3[i]/60.d*!DPI/180.d,attmat)*180.d/!DPI
+    ; Ensure 0-360 degrees
+    if (NEWROLL[i] lt 0.d) then NEWROLL[i]=NEWROLL[i]+360.d
+  endfor
 endelse
 
 return
