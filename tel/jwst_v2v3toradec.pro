@@ -172,7 +172,7 @@ endif else begin
   print,'No attitude information provided!'
   return
 endelse
-
+ 
 ; If running in /local mode, use the local approximate transform
 if (keyword_set(local)) then begin
   dv2=(v2/60.d*!PI/180.-thisV2REF)*cos(thisV3REF) ; Offset from V2REF in radians
