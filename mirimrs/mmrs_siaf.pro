@@ -81,7 +81,7 @@ beta0=fxpar(hdr,'B_ZERO'+strcompress(string(ch),/remove_all))
 dbeta=fxpar(hdr,'B_DEL'+strcompress(string(ch),/remove_all))
 
 ; Read FoV alpha boundaries
-extname='FoV-CH'+strcompress(string(ch),/remove_all)
+extname='FoV_CH'+strcompress(string(ch),/remove_all)
 alphalimits=mrdfits(reffile,extname)
 
 ; Determine number of slices
@@ -130,6 +130,11 @@ mmrs_abtov2v3,alpha_corners,beta_corners,v2_corners,v3_corners,channel,refdir=re
 ; Convert to v2,v3 inscribed box
 mmrs_abtov2v3,inscr_alpha,inscr_beta,inscr_v2,inscr_v3,channel,refdir=refdir
 
+;V2REF = -8.3942412d ; In arcmin
+;V3REF = -5.3123744d ; In arcmin
+;inscr_v2=(inscr_v2-V2REF)*60.
+;inscr_v3=-(inscr_v3-V3REF)*60.
+
 ; Print all of the corner coordinates to a file
 printf,lun,'# SliceName SliceNum a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
 printf,lun,channel,'   -1',inscr_alpha[0],inscr_beta[0],inscr_v2[0],inscr_v3[0],$
@@ -167,6 +172,18 @@ for i=0,nslices-1 do begin
   oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
 endfor
 oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
+device,/close
+
+; Plot the corners in v2,v3 in a constant box size
+plotname='siaf_'+channel+'v2v3_common.ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
+for i=0,nslices-1 do begin
+  oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
+endfor
+oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
+oplot,[-8.3942412], [-5.3123744],psym=1
 device,/close
 set_plot,'x'
 
