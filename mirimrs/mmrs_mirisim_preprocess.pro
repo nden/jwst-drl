@@ -2,16 +2,39 @@
 ; useful for building cubes.  This means adding some WCS keywords
 ; and doing a very rough ramp-slope correction.
 
+function mmrs_refdark,det,band,dark_dir=dark_dir
+
+if (~keyword_set(dark_dir)) then dark_dir='./darks/'
+
+if ((strtrim(det,2) eq 'MIRIFUSHORT')and(strtrim(band,2) eq 'SHORT')) then darkfile='dark_12A.fits'
+if ((strtrim(det,2) eq 'MIRIFUSHORT')and(strtrim(band,2) eq 'MEDIUM')) then darkfile='dark_12B.fits'
+if ((strtrim(det,2) eq 'MIRIFUSHORT')and(strtrim(band,2) eq 'LONG')) then darkfile='dark_12C.fits'
+if ((strtrim(det,2) eq 'MIRIFULONG')and(strtrim(band,2) eq 'SHORT')) then darkfile='dark_34A.fits'
+if ((strtrim(det,2) eq 'MIRIFULONG')and(strtrim(band,2) eq 'MEDIUM')) then darkfile='dark_34B.fits'
+if ((strtrim(det,2) eq 'MIRIFULONG')and(strtrim(band,2) eq 'LONG')) then darkfile='dark_34C.fits'
+
+darkfile=concat_dir(dark_dir,darkfile)
+
+dark=readfits(darkfile)
+
+return,dark
+end
+
 pro mmrs_mirisim_preprocess,directory, dark_dir=dark_dir
 
 ; directory is a local directory path, inside which it will look
 ; for det_images/*.fits and convert each of those files
 indir=concat_dir(directory,'det_images/')
+outdir=str_replace(indir,'det_images','preproc')
+if file_test(outdir,/directory) eq 0 then spawn, '\mkdir -p '+outdir
+
 infiles=file_search(indir,'*.fits')
 nfiles=n_elements(infiles)
 outfiles=infiles
-for i=0,nfiles-1 do $
+for i=0,nfiles-1 do begin
   outfiles[i]=str_replace(infiles[i],'det_image_','preproc_')
+  outfiles[i]=str_replace(outfiles[i],'det_images','preproc')
+endfor
 
 ditherfile=concat_dir(getenv('MIRISIM_DIR'),'obssim/data/mrs_recommended_dither.dat')
 ; Table of possible dither positions (2 x N)
@@ -34,23 +57,52 @@ endwhile
 close,lun
 free_lun,lun
 
-stop
+; Pretend we're pointing at RA=45 degrees, dec=0 degrees
+; with local roll 0
+razp=45.D
+deczp=0.D
+ROLLREF=0.D
+
+; Define V2REF, V3REF at middle of 1A field (alpha=beta=0.0)
+V2REF = -8.3942412d ; In arcmin
+V3REF = -5.3123744d ; In arcmin
+
+
 for i=0,nfiles-1 do begin
+  hdr=headfits(infiles[i])
+  raw=mrdfits(infiles[i],1)
+  thisdet=fxpar(hdr,'DETECTOR')
+  thisband=fxpar(hdr,'BAND')
+  ditherno=fxpar(hdr,'PNTG_SEQ')-1; Convert to 0 indexed
 
-raw=mrdfits(file,1,hdr)
-thisdet=fxpar(hdr,'DETECTOR')
-thisband=fxpar(hdr,'BAND')
-ditherno=fxpar(hdr,'PNTG_SEQ')
+  ndim=size(raw,/dim)
+  ; Take only the last frame
+  lf=raw[*,*,ndim[2]-1,*]
+  ; Median across each integration to reject cosmics
+  frame=median(lf,dimension=4)
 
+  ; Subtract off a reference dark
+  dark=mmrs_refdark(thisdet,thisband,dark_dir=dark_dir)
+  frame=frame-dark
 
+  ; Add dither offset keywords
+  xoffset=dithertable[0,ditherno]
+  yoffset=dithertable[1,ditherno]
+  dra=xoffset*cos(ROLLREF*!PI/180.)+yoffset*sin(ROLLREF*!PI/180.)
+  ddec=-xoffset*sin(ROLLREF*!PI/180.)+yoffset*cos(ROLLREF*!PI/180.)
+  ; Figure out corresponding RA,DEC location
+  ; (subtract because we're pretending that the telescope moved
+  ; instead of the point source?)
+  RAREF=razp-dra/cos(deczp*!PI/180.)/3600.D
+  DECREF=deczp-ddec/3600.D
+  fxaddpar,hdr,'V2_REF',V2REF
+  fxaddpar,hdr,'V3_REF',V3REF
+  fxaddpar,hdr,'ROLL_REF',ROLLREF
+  fxaddpar,hdr,'RA_REF',RAREF
+  fxaddpar,hdr,'DEC_REF',DECREF
 
-ndim=size(raw,/dim)
-; Take only the last frame
-lf=raw[*,*,ndim[2]-1,*]
-; Median across each integration to reject cosmics
-frame=median(lf,dimension=4)
-
-; Subtract off a reference dark
+  ; Write out
+  writefits,outfiles[i],frame,hdr
 endfor
 
 return
