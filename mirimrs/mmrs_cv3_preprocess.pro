@@ -1,7 +1,17 @@
-; Also do background subtraction
+; Preprocess Lvl2b CV3 MRS data
+; to add dither information.
+; Also do background subtraction.
 
-pro mmrs_cv3_preprocess
+pro mmrs_cv3_preprocess,directory,outdir=outdir
 
+; directory is a local directory path inside which it will look
+; for LVL2b files
+rootdir=directory
+
+; Default output directory
+if (~keyword_set(outdir)) then outdir=concat_dir(indir,'Converted')
+; Ensure output directory exists
+if file_test(outdir,/directory) eq 0 then spawn, '\mkdir -p '+outdir
 
 ; Pretend we're pointing at RA=45 degrees, dec=0 degrees
 ; with local roll 0
@@ -13,10 +23,11 @@ ROLLREF=0.D
 V2REF = -8.3942412d ; In arcmin
 V3REF = -5.3123744d ; In arcmin
 
-; Only care about ch1a, find those files
-rootdir='/Users/dlaw/STSCI/MIRI/CV3/'
-files=file_search(rootdir+'LVL2/CH12/*-SHORT-*')
-bfiles=file_search(rootdir+'LVL2/CH12/*-SHORTB-*')
+; Only care about ch1a, find those files and their background
+; exposures
+files=file_search(concat_dir(rootdir,'*-SHORT-*'))
+; background exposures
+bfiles=file_search(concat_dir(rootdir,'*-SHORTB-*'))
 nfiles=n_elements(files)
 
 ; Sort based on Q number order
@@ -31,7 +42,7 @@ bfiles=bfiles[theorder]
 
 ; Read in and write out files
 for i=0,nfiles-1 do begin
-  outfile=ml_strreplace(files[i],'LVL2/CH12/','Converted/')
+  outfile=concat_dir(outdir,fileandpath(files[i]))
 
   image=readfits(files[i],hdr)
   imageb=readfits(bfiles[i],hdrb)
@@ -72,13 +83,12 @@ for i=0,nfiles-1 do begin
   fxaddpar,hdr,'RA_REF',RAREF
   fxaddpar,hdr,'DEC_REF',DECREF
 
-print,RAREF,DECREF,v2,v3
-;stop
+  print,RAREF,DECREF,v2,v3
+
   ; Write out file
   writefits,outfile,image,hdr
 endfor
 
-stop
 
 return
 end
