@@ -33,6 +33,8 @@ v3off=-(v3off-v3ref)*60.
 raoff=v2off*cos(ROLLREF*!PI/180.)+v3off*sin(ROLLREF*!PI/180.)
 decoff=-v2off*sin(ROLLREF*!PI/180.)+v3off*cos(ROLLREF*!PI/180.)
 
+;print,aoff,boff,raoff,decoff
+
 return
 end
 
@@ -66,7 +68,7 @@ while not eof(lun) do begin
   ; Look for a line of info about the dither pattern start index (1-indexed)
   a=stregex(line,'Starting index of executed dither pattern:')
   if (a ge 0) then begin
-    dstart=fix((strsplit(line,'Starting index of executed dither pattern:',/extract,/regex))[1])
+    dstart=fix((strsplit(line,'Starting index of executed dither pattern:',/extract,/regex))[1])-1 ;0-indexed
     break
   endif
 endwhile
@@ -89,7 +91,7 @@ for i=0,nfiles-1 do begin
   raw=mrdfits(infiles[i],1)
   thisdet=fxpar(hdr,'DETECTOR')
   thisband=fxpar(hdr,'BAND')
-  ditherno=fxpar(hdr,'PNTG_SEQ')-1; Convert to 0 indexed
+  ditherno=dstart+fxpar(hdr,'PNTG_SEQ')-1; Add starting point, convert to 0 indexed
 
   ndim=size(raw,/dim)
   ; Take only the last frame
