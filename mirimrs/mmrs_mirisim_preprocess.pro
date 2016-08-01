@@ -20,6 +20,22 @@ dark=readfits(darkfile)
 return,dark
 end
 
+; Convert a nominal dither offset in alpha,beta
+; to offset in ra, dec
+pro mmrs_mirisim_dloc,aoff,boff,ROLLREF,raoff,decoff
+
+; Convert alpha,beta offsets to v2, v3
+mmrs_abtov2v3,0.,0.,v2ref,v3ref,'1A'
+mmrs_abtov2v3,aoff,boff,v2off,v3off,'1A'
+v2off=-(v2off-v2ref)*60.
+v3off=-(v3off-v3ref)*60.
+
+raoff=v2off*cos(ROLLREF*!PI/180.)+v3off*sin(ROLLREF*!PI/180.)
+decoff=-v2off*sin(ROLLREF*!PI/180.)+v3off*cos(ROLLREF*!PI/180.)
+
+return
+end
+
 pro mmrs_mirisim_preprocess,directory, dark_dir=dark_dir
 
 ; directory is a local directory path, inside which it will look
@@ -85,11 +101,11 @@ for i=0,nfiles-1 do begin
   dark=mmrs_refdark(thisdet,thisband,dark_dir=dark_dir)
   frame=frame-dark
 
-  ; Add dither offset keywords
-  xoffset=dithertable[0,ditherno]
-  yoffset=dithertable[1,ditherno]
-  dra=xoffset*cos(ROLLREF*!PI/180.)+yoffset*sin(ROLLREF*!PI/180.)
-  ddec=-xoffset*sin(ROLLREF*!PI/180.)+yoffset*cos(ROLLREF*!PI/180.)
+  ; Add dither offset keywords.
+  aoffset=dithertable[0,ditherno]; In alpha
+  boffset=dithertable[1,ditherno]; In beta
+  ; Convert alpha,beta offsets to ra,dec
+  mmrs_mirisim_dloc,aoffset,boffset,ROLLREF,dra,ddec
   ; Figure out corresponding RA,DEC location
   ; (subtract because we're pretending that the telescope moved
   ; instead of the point source?)
