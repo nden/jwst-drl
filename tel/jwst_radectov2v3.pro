@@ -182,7 +182,7 @@ if (keyword_set(local)) then begin
   dv3=dra*sin(thisROLLREF)+ddec*cos(thisROLLREF) ; Offset from V3REF in radians
 
   v2=(thisV2REF+dv2/cos(thisV3REF))*180.d/!DPI*60. ; New V2 in arcmin
-  v3=(thisV3REF+dv3)*180.d/!DPI*60. ; New V3 in degrees
+  v3=(thisV3REF+dv3)*180.d/!DPI*60. ; New V3 in arcmin
   NEWROLL=thisROLLREF*180.d/!DPI ; New roll (identical to old) in degrees
 ; If running in normal mode, use the full attitude matrix transform
 endif else begin
