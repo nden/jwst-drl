@@ -34,6 +34,7 @@
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
 ;   27-Oct-2015  Use library routines (D. Law)
 ;   24-Jan-2016  Update to CDP5 (D. Law)
+;   13-Sep-2016  Fix bug in slice indexing (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -51,7 +52,7 @@ sband=strmid(channel,1,1)
 
 ; Determine output files to put the results in
 outfile='siaf_'+channel+'.txt'
-openw,lun,outfile,/get_lun,width=250
+openw,lun,outfile,/get_lun,width=450
 
 ; Determine input reference FITS file
 case channel of
@@ -93,8 +94,12 @@ slicenum=indgen(nslices)+1
 slicename=string(ch*100+slicenum)+sband
 
 ; Figure out beta boundaries of each slice
-beta1=beta0+(slicenum-0.5)*dbeta; Lower bound
+beta1=beta0+(slicenum-1.5)*dbeta; Lower bound
 beta2=beta1+dbeta; Upper bound
+
+; Figure out central reference point locations of each slice
+slice_beta_ref=(beta1+beta2)/2.
+slice_alpha_ref=replicate(0.,nslices)
 
 ; Convert from our list of maximum and minimum alpha,beta
 ; to actual corner coordinates for each slice
@@ -124,7 +129,14 @@ inscr_beta[1]=max(beta_corners)
 inscr_beta[2]=max(beta_corners)
 inscr_beta[3]=min(beta_corners)
 
+; Figure out central reference point locations of the inscribed footprint
+; Fix it to alpha=beta=0.
+beta_ref=0.
+alpha_ref=0.
 
+; Convert to v2,v3 reference points
+mmrs_abtov2v3,alpha_ref,beta_ref,v2_ref,v3_ref,channel,refdir=refdir
+mmrs_abtov2v3,slice_alpha_ref,slice_beta_ref,slice_v2_ref,slice_v3_ref,channel,refdir=refdir
 ; Convert to v2,v3 corner coordinates
 mmrs_abtov2v3,alpha_corners,beta_corners,v2_corners,v3_corners,channel,refdir=refdir
 ; Convert to v2,v3 inscribed box
@@ -136,13 +148,14 @@ mmrs_abtov2v3,inscr_alpha,inscr_beta,inscr_v2,inscr_v3,channel,refdir=refdir
 ;inscr_v3=-(inscr_v3-V3REF)*60.
 
 ; Print all of the corner coordinates to a file
-printf,lun,'# SliceName SliceNum a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
-printf,lun,channel,'   -1',inscr_alpha[0],inscr_beta[0],inscr_v2[0],inscr_v3[0],$
+printf,lun,'# SliceName SliceNum a_ref b_ref v2_ref v3_ref a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
+printf,lun,channel,'   -1',alpha_ref,beta_ref,v2_ref,v3_ref,inscr_alpha[0],inscr_beta[0],inscr_v2[0],inscr_v3[0],$
   inscr_alpha[1],inscr_beta[1],inscr_v2[1],inscr_v3[1],$
   inscr_alpha[2],inscr_beta[2],inscr_v2[2],inscr_v3[2],$
   inscr_alpha[3],inscr_beta[3],inscr_v2[3],inscr_v3[3]
 for i=0,nslices-1 do begin
   printf,lun,slicename[i],slicenum[i],$
+    slice_alpha_ref[i],slice_beta_ref[i],slice_v2_ref[i],slice_v3_ref[i],$
     alpha_corners[0,i],beta_corners[0,i],v2_corners[0,i],v3_corners[0,i],$
     alpha_corners[1,i],beta_corners[1,i],v2_corners[1,i],v3_corners[1,i],$
     alpha_corners[2,i],beta_corners[2,i],v2_corners[2,i],v3_corners[2,i],$
@@ -159,7 +172,9 @@ seed=56
 colors=randomu(seed,nslices)*250
 for i=0,nslices-1 do begin
   oplot,[alpha_corners[*,i],alpha_corners[0,i]],[beta_corners[*,i],beta_corners[0,i]],color=colors[i]
+  oplot,[slice_alpha_ref[i]],[slice_beta_ref[i]],psym=1,color=colors[i]
 endfor
+oplot,[alpha_ref],[beta_ref],psym=1,thick=3,symsize=2
 oplot,inscr_alpha,inscr_beta
 device,/close
 
@@ -170,7 +185,9 @@ loadct,39
 plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[max(v2_corners),min(v2_corners)],yrange=[min(v3_corners),max(v3_corners)],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
 for i=0,nslices-1 do begin
   oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
+  oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i]
 endfor
+oplot,[v2_ref],[v3_ref],psym=1,thick=3,symsize=2
 oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
 device,/close
 
@@ -181,7 +198,9 @@ loadct,39
 plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
 for i=0,nslices-1 do begin
   oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
+  oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i]
 endfor
+oplot,[v2_ref],[v3_ref],psym=1,thick=3,symsize=2
 oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
 oplot,[-8.3942412], [-5.3123744],psym=1
 device,/close
