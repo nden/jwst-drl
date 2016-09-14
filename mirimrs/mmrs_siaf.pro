@@ -167,42 +167,42 @@ plotname='siaf_'+channel+'ab.ps'
 set_plot,'ps'
 device,filename=plotname,/color
 loadct,39
-plot,alpha_corners[*,0],beta_corners[*,0],/nodata,xrange=[min(alpha_corners),max(alpha_corners)],yrange=[min(beta_corners),max(beta_corners)],xstyle=1,ystyle=1,xtitle='Alpha',ytitle='Beta',xcharsize=1.3,ycharsize=1.3,title=channel
+plot,alpha_corners[*,0],beta_corners[*,0],/nodata,xrange=[min(alpha_corners),max(alpha_corners)],yrange=[min(beta_corners),max(beta_corners)],xstyle=1,ystyle=1,xtitle='Alpha',ytitle='Beta',xcharsize=1.3,ycharsize=1.3,title=channel,thick=5,charthick=5,xthick=5,ythick=5
 seed=56
 colors=randomu(seed,nslices)*250
 for i=0,nslices-1 do begin
-  oplot,[alpha_corners[*,i],alpha_corners[0,i]],[beta_corners[*,i],beta_corners[0,i]],color=colors[i]
-  oplot,[slice_alpha_ref[i]],[slice_beta_ref[i]],psym=1,color=colors[i]
+  oplot,[alpha_corners[*,i],alpha_corners[0,i]],[beta_corners[*,i],beta_corners[0,i]],color=colors[i],thick=3
+  oplot,[slice_alpha_ref[i]],[slice_beta_ref[i]],psym=1,color=colors[i],thick=3
 endfor
 oplot,[alpha_ref],[beta_ref],psym=1,thick=3,symsize=2
-oplot,inscr_alpha,inscr_beta
+oplot,inscr_alpha,inscr_beta,thick=3
 device,/close
 
 ; Plot the corners in v2,v3
 plotname='siaf_'+channel+'v2v3.ps'
 device,filename=plotname,/color
 loadct,39
-plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[max(v2_corners),min(v2_corners)],yrange=[min(v3_corners),max(v3_corners)],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
+plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[max(v2_corners),min(v2_corners)],yrange=[min(v3_corners),max(v3_corners)],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel,thick=5,charthick=5,xthick=5,ythick=5
 for i=0,nslices-1 do begin
-  oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
-  oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i]
+  oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i],thick=3
+  oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i],thick=3
 endfor
 oplot,[v2_ref],[v3_ref],psym=1,thick=3,symsize=2
-oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
+oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]],thick=3
 device,/close
 
 ; Plot the corners in v2,v3 in a constant box size
 plotname='siaf_'+channel+'v2v3_common.ps'
 device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
-plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel
+plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel,thick=5,charthick=5,xthick=5,ythick=5
 for i=0,nslices-1 do begin
-  oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i]
-  oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i]
+  oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i],thick=3
+  oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i],thick=3
 endfor
 oplot,[v2_ref],[v3_ref],psym=1,thick=3,symsize=2
-oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]]
-oplot,[-8.3942412], [-5.3123744],psym=1
+oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]],thick=3
+oplot,[-8.3942412], [-5.3123744],psym=1,thick=3
 device,/close
 set_plot,'x'
 
