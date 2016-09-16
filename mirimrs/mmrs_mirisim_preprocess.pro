@@ -38,7 +38,7 @@ decoff=-v2off*sin(ROLLREF*!PI/180.)+v3off*cos(ROLLREF*!PI/180.)
 return
 end
 
-pro mmrs_mirisim_preprocess,directory, dark_dir=dark_dir
+pro mmrs_mirisim_preprocess,directory, nodark=nodark, dark_dir=dark_dir
 
 ; directory is a local directory path, inside which it will look
 ; for det_images/*.fits and convert each of those files
@@ -100,8 +100,10 @@ for i=0,nfiles-1 do begin
   frame=median(lf,dimension=4)
 
   ; Subtract off a reference dark
-  dark=mmrs_refdark(thisdet,thisband,dark_dir=dark_dir)
-  frame=frame-dark
+  if (~keyword_set(nodark)) then begin
+    dark=mmrs_refdark(thisdet,thisband,dark_dir=dark_dir)
+    frame=frame-dark
+  endif
 
   ; Add dither offset keywords.
   aoffset=dithertable[0,ditherno]; In alpha
