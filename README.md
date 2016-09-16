@@ -4,6 +4,9 @@ This product contains a bunch of homegrown IDL based routines by D. Law
 to test and evaluate coordinate transforms associated with the MIRI
 instrument on board JWST.
 
+manga/ contains some convenience functions taken from the IDL code library
+of the SDSS MaNGA IFU pipeline.
+
 mirim/ contains routines to apply the MIRI Imager distortion solution to
 convert between pixel coordinates and JWST v2,v3 telescope-frame coordinates
 
