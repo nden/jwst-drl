@@ -13,6 +13,7 @@
 ;
 ; OPTIONAL INPUTS:
 ;   rootdir - Root directory for distortion files
+;   /parfile - Specifies output as a Yanny-style par file
 ;
 ; OUTPUT:
 ;   siaf_[channel].txt  Slicer corner coordinates
@@ -20,7 +21,7 @@
 ;   siaf_[channel]v2v3.ps  Plot of v2,v3 corner coordinates
 ;
 ; COMMENTS:
-;   Works with CDP5 delivery files.
+;   Works with CDP6 delivery files.
 ;
 ; EXAMPLES:
 ;
@@ -35,10 +36,11 @@
 ;   27-Oct-2015  Use library routines (D. Law)
 ;   24-Jan-2016  Update to CDP5 (D. Law)
 ;   13-Sep-2016  Fix bug in slice indexing (D. Law)
+;   30-Sep-2016  Add Yanny par file option (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
-pro mmrs_siaf,channel,rootdir=rootdir
+pro mmrs_siaf,channel,rootdir=rootdir,parfile=parfile
 
 if (~keyword_set(rootdir)) then $
   rootdir='~/jwst/trunk/mirimrs/distfiles/cdp6/'
@@ -52,6 +54,7 @@ sband=strmid(channel,1,1)
 
 ; Determine output files to put the results in
 outfile='siaf_'+channel+'.txt'
+outpar='siaf_'+channel+'.par'
 openw,lun,outfile,/get_lun,width=450
 
 ; Determine input reference FITS file
@@ -147,20 +150,73 @@ mmrs_abtov2v3,inscr_alpha,inscr_beta,inscr_v2,inscr_v3,channel,refdir=refdir
 ;inscr_v2=(inscr_v2-V2REF)*60.
 ;inscr_v3=-(inscr_v3-V3REF)*60.
 
-; Print all of the corner coordinates to a file
-printf,lun,'# SliceName SliceNum a_ref b_ref v2_ref v3_ref a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
-printf,lun,channel,'   -1',alpha_ref,beta_ref,v2_ref,v3_ref,inscr_alpha[0],inscr_beta[0],inscr_v2[0],inscr_v3[0],$
-  inscr_alpha[1],inscr_beta[1],inscr_v2[1],inscr_v3[1],$
-  inscr_alpha[2],inscr_beta[2],inscr_v2[2],inscr_v3[2],$
-  inscr_alpha[3],inscr_beta[3],inscr_v2[3],inscr_v3[3]
-for i=0,nslices-1 do begin
-  printf,lun,slicename[i],slicenum[i],$
+if (keyword_set(parfile)) then begin
+  siaf_line=create_struct(name='SIAF', $
+    'BAND', channel, $
+    'SliceName', channel, $
+    'SliceNum', 0, $
+    'alpha_ref', alpha_ref, $
+    'beta_ref', beta_ref, $
+    'v2_ref', v2_ref, $
+    'v3_ref', v3_ref, $
+    'alpha_ll', inscr_alpha[0], $
+    'beta_ll', inscr_beta[0], $
+    'v2_ll', inscr_v2[0], $
+    'v3_ll', inscr_v3[0], $
+    'alpha_ul', inscr_alpha[1], $
+    'beta_ul', inscr_beta[1], $
+    'v2_ul', inscr_v2[1], $
+    'v3_ul', inscr_v3[1], $
+    'alpha_ur', inscr_alpha[2], $
+    'beta_ur', inscr_beta[2], $
+    'v2_ur', inscr_v2[2], $
+    'v3_ur', inscr_v3[2], $
+    'alpha_lr', inscr_alpha[3], $
+    'beta_lr', inscr_beta[3], $
+    'v2_lr', inscr_v2[3], $
+    'v3_lr', inscr_v3[3])
+  siaf=replicate(siaf_line,nslices+1)
+  for i=0,nslices-1 do begin
+    siaf[i+1].SliceName=slicename[i]
+    siaf[i+1].SliceNum=slicenum[i]
+    siaf[i+1].alpha_ref=slice_alpha_ref[i]
+    siaf[i+1].beta_ref=slice_beta_ref[i]
+    siaf[i+1].v2_ref=slice_v2_ref[i]
+    siaf[i+1].v3_ref=slice_v3_ref[i]
+    siaf[i+1].alpha_ll=alpha_corners[0,i]
+    siaf[i+1].beta_ll=beta_corners[0,i]
+    siaf[i+1].v2_ll=v2_corners[0,i]
+    siaf[i+1].v3_ll=v3_corners[0,i]
+    siaf[i+1].alpha_ul=alpha_corners[1,i]
+    siaf[i+1].beta_ul=beta_corners[1,i]
+    siaf[i+1].v2_ul=v2_corners[1,i]
+    siaf[i+1].v3_ul=v3_corners[1,i]
+    siaf[i+1].alpha_ur=alpha_corners[2,i]
+    siaf[i+1].beta_ur=beta_corners[2,i]
+    siaf[i+1].v2_ur=v2_corners[2,i]
+    siaf[i+1].v3_ur=v3_corners[2,i]
+    siaf[i+1].alpha_lr=alpha_corners[3,i]
+    siaf[i+1].beta_lr=beta_corners[3,i]
+    siaf[i+1].v2_lr=v2_corners[3,i]
+    siaf[i+1].v3_lr=v3_corners[3,i]
+  endfor
+  yanny_write,outpar,ptr_new(siaf)
+endif else begin
+  ; Print all of the corner coordinates to a file
+  printf,lun,'# SliceName SliceNum a_ref b_ref v2_ref v3_ref a_ll b_ll v2_ll v3_ll a_ul b_ul v2_ul v3_ul a_ur b_ur v2_ur v3_ur a_lr b_lr v2_lr v3_lr'
+  printf,lun,channel,'   -1',alpha_ref,beta_ref,v2_ref,v3_ref,inscr_alpha[0],inscr_beta[0],inscr_v2[0],inscr_v3[0],$
+    inscr_alpha[1],inscr_beta[1],inscr_v2[1],inscr_v3[1],$
+    inscr_alpha[2],inscr_beta[2],inscr_v2[2],inscr_v3[2],$
+    inscr_alpha[3],inscr_beta[3],inscr_v2[3],inscr_v3[3]
+  for i=0,nslices-1 do begin
+    printf,lun,slicename[i],slicenum[i],$
     slice_alpha_ref[i],slice_beta_ref[i],slice_v2_ref[i],slice_v3_ref[i],$
     alpha_corners[0,i],beta_corners[0,i],v2_corners[0,i],v3_corners[0,i],$
     alpha_corners[1,i],beta_corners[1,i],v2_corners[1,i],v3_corners[1,i],$
     alpha_corners[2,i],beta_corners[2,i],v2_corners[2,i],v3_corners[2,i],$
     alpha_corners[3,i],beta_corners[3,i],v2_corners[3,i],v3_corners[3,i]
-endfor
+  endfor
+endelse
 
 ; Plot the corners in alpha,beta for this subband
 plotname='siaf_'+channel+'ab.ps'
