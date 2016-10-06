@@ -124,7 +124,7 @@ endfor
 inscr_alpha=fltarr(4)
 inscr_beta=fltarr(4)
 inscr_alpha[0]=max(alpha_corners[0,*])
-inscr_alpha[1]=max(alpha_corners[0,*])
+inscr_alpha[1]=max(alpha_corners[1,*])
 inscr_alpha[2]=min(alpha_corners[2,*])
 inscr_alpha[3]=min(alpha_corners[3,*])
 inscr_beta[0]=min(beta_corners)
