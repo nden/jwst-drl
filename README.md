@@ -30,3 +30,6 @@ setenv MIRISIM_DIR /Users/dlaw/anaconda2/envs/mirisim/lib/python2.7/site-package
 pointing to your mirisim install location.  This is necessary in order to find
 the dither reference table assumed by mirisim.
 
+
+Tag 201609 contains code from September 2016, which is pertinent to when
+mirisim did not include position information in the header data.
