@@ -207,6 +207,20 @@ print,'Wavelength (micron): ',slice*ps_z+min(baselambda)
 print,'X FWHM (arcsec): ',fwhmx
 print,'Y FWHM (arcsec): ',fwhmy
 
+collapse=im
+mkhdr,imhdr,collapse
+  sxaddpar, imhdr, 'CRPIX1', xcen, 'Reference pixel (1-indexed)'
+  sxaddpar, imhdr, 'CRPIX2', ycen, 'Reference pixel (1-indexed)'
+  sxaddpar, imhdr, 'CRVAL1', racen
+  sxaddpar, imhdr, 'CRVAL2', decen
+  sxaddpar, imhdr, 'CD1_1', -2.77778e-4*ps_x
+  sxaddpar, imhdr, 'CD2_2', 2.77778e-4*ps_y
+  sxaddpar, imhdr, 'CTYPE1', 'RA---TAN'
+  sxaddpar, imhdr, 'CTYPE2', 'DEC--TAN'
+  sxaddpar, imhdr, 'CUNIT1', 'deg'
+  sxaddpar, imhdr, 'CUNIT2', 'deg'
+
+
 if (~keyword_set(imonly)) then begin
   cube=mmrs_cube(cube_x,cube_y,cube_z,master_flux,master_expnum,[cube_xsize,cube_ysize,cube_zsize],rlim,xsquash=xpsf,ysquash=ypsf,scale=scale,wtype=2,expsig=expsig)
 
@@ -223,12 +237,13 @@ if (~keyword_set(imonly)) then begin
   sxaddpar, cubehdr, 'CUNIT1', 'deg'
   sxaddpar, cubehdr, 'CUNIT2', 'deg'
 
+  collapse=median(cube[*,*,30:cube_zsize-30],dimension=3)
   writefits,outfile,cube,cubehdr
 endif
 
+
 outfile_coll=concat_dir(outdir,'collapse.fits')
-collapse=median(cube[*,*,30:cube_zsize-30],dimension=3)
-writefits,outfile_coll,collapse
+writefits,outfile_coll,collapse,imhdr
 
 imfit=gauss2dfit(collapse,coeff)
 fwhmx=round(coeff[2]*2.355*ps_x*1e3)/1e3
