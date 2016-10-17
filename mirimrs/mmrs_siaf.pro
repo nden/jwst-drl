@@ -37,6 +37,7 @@
 ;   24-Jan-2016  Update to CDP5 (D. Law)
 ;   13-Sep-2016  Fix bug in slice indexing (D. Law)
 ;   30-Sep-2016  Add Yanny par file option (D. Law)
+;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -144,11 +145,6 @@ mmrs_abtov2v3,slice_alpha_ref,slice_beta_ref,slice_v2_ref,slice_v3_ref,channel,r
 mmrs_abtov2v3,alpha_corners,beta_corners,v2_corners,v3_corners,channel,refdir=refdir
 ; Convert to v2,v3 inscribed box
 mmrs_abtov2v3,inscr_alpha,inscr_beta,inscr_v2,inscr_v3,channel,refdir=refdir
-
-;V2REF = -8.3942412d ; In arcmin
-;V3REF = -5.3123744d ; In arcmin
-;inscr_v2=(inscr_v2-V2REF)*60.
-;inscr_v3=-(inscr_v3-V3REF)*60.
 
 if (keyword_set(parfile)) then begin
   siaf_line=create_struct(name='SIAF', $

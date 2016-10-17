@@ -17,12 +17,12 @@
 ;   refdir - Root directory for distortion files
 ;
 ; OUTPUT:
-;   v2     - JWST v2 coordinate in arcminutes
-;   v3     - JWST v3 coordinate in arcminutes
+;   v2     - JWST v2 coordinate in arcsec
+;   v3     - JWST v3 coordinate in arcsec
 ;
 ; OPTIONAL OUTPUT:
-;   xan    - JWST xan coordinate in arcminutes
-;   yan    - JWST yan coordinate in arcminutes
+;   xan    - JWST xan coordinate in arcsec
+;   yan    - JWST yan coordinate in arcsec
 ;
 ; COMMENTS:
 ;   Works with CDP6 delivery files.  Inverse function is mirim_v2v3toxy
@@ -41,6 +41,7 @@
 ;
 ; REVISION HISTORY:
 ;   08-Sep-2016  Written by David Law (dlaw@stsci.edu)
+;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -112,11 +113,11 @@ JWST[*,0] = JWST_XYAN[*,0]
 JWST[*,1] = -JWST_XYAN[*,1]-7.8
 JWST[*,2] = JWST_XYAN[*,2]
 
-; Output vectors
-v2=JWST[*,0]
-v3=JWST[*,1]
-xan=JWST_XYAN[*,0]
-yan=JWST_XYAN[*,1]
+; Output vectors in units of arcsec
+v2=JWST[*,0]*60.
+v3=JWST[*,1]*60.
+xan=JWST_XYAN[*,0]*60.
+yan=JWST_XYAN[*,1]*60.
 
 return
 end

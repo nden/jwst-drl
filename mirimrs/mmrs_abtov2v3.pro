@@ -17,12 +17,12 @@
 ;   refdir - Root directory for distortion files
 ;
 ; OUTPUT:
-;   v2      - V2 coordinate in arcmin
-;   v3      - V3 coordinate in arcmin
+;   v2      - V2 coordinate in arcsec
+;   v3      - V3 coordinate in arcsec
 ;
 ; OPTIONAL OUTPUT:
-;   XAN     - XAN coordinate in arcmin
-;   YAN     - YAN coordinate in arcmin
+;   XAN     - XAN coordinate in arcsec
+;   YAN     - YAN coordinate in arcsec
 ;
 ; COMMENTS:
 ;   Works with CDP5 delivery files.  Inverse function is mmrs_v2v3toab.pro
@@ -40,6 +40,7 @@
 ;   27-Oct-2015  Add conversion to REAL V2,V3 (D. Law)
 ;   16-Nov-2015  Add conversion to XAN,YAN (D. Law)
 ;   24-Jan-2016  Update reference files to CDP5 (D. Law)
+;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -94,8 +95,11 @@ xan=conv_v2.(1)+conv_v2.(2)*adbl + $
 yan=conv_v3.(1)+conv_v3.(2)*adbl + $
       conv_v3.(3)*bdbl + conv_v3.(4)*adbl*bdbl
 
-v2=xan
-v3=-(yan+7.8)
+; convert to arcsec
+v2=xan*60.
+v3=-(yan+7.8)*60.
+xan=xan*60.
+yan=yan*60.
 
 return
 end

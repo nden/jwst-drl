@@ -9,8 +9,8 @@
 ;   mmrs_v2v3toab,v2,v3,a,b,channel,[refdir=]
 ;
 ; INPUTS:
-;   v2      - V2 coordinate in arcmin
-;   v3      - V3 coordinate in arcmin
+;   v2      - V2 coordinate in arcsec
+;   v3      - V3 coordinate in arcsed
 ;   channel - channel name (e.g, '1A')
 ;
 ; OPTIONAL INPUTS:
@@ -36,6 +36,7 @@
 ;   30-Jul-2015  Written by David Law (dlaw@stsci.edu)
 ;   27-Oct-2015  Use real V2, V3 (D. Law)
 ;   24-Jan-2016  Update reference files to CDP5 (D. Law)
+;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -51,9 +52,9 @@ ch=fix(strmid(channel,0,1))
 sband=strmid(channel,1,1)
 
 ; Ensure we're not using integer inputs
-; and convert to XAN,YAN
-xan=double(v2)
-yan=-double(v3)-7.8
+; and convert to XAN,YAN in units of arcmin
+xan=double(v2/60.)
+yan=-double(v3/60.)-7.8
 
 ; Determine input reference FITS file
 case channel of

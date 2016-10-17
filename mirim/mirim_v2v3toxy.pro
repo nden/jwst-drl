@@ -9,8 +9,8 @@
 ;   mirim_v2v3toxy,v2,v3,x,y,filter,[refdir=,/xan]
 ;
 ; INPUTS:
-;   v2     - JWST v2 coordinate in arcminutes
-;   v3     - JWST v3 coordinate in arcminutes
+;   v2     - JWST v2 coordinate in arcsec
+;   v3     - JWST v3 coordinate in arcsec
 ;   filter - Filter name (e.g., 'F770W')
 ;
 ; OPTIONAL INPUTS:
@@ -40,6 +40,7 @@
 ;
 ; REVISION HISTORY:
 ;   08-Sep-2016  Written by David Law (dlaw@stsci.edu)
+;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;-
 ;------------------------------------------------------------------------------
 
@@ -72,17 +73,17 @@ if (n_elements(v3) ne npoints) then begin
 endif
 UnitVec=fltarr(npoints)+1.0
 
-; Set up JWST V2,V3 arrays
+; Set up JWST V2,V3 arrays in units of arcmin
 JWST=fltarr(npoints,3)
 ; If inputs were really in XAN, YAN:
 if (keyword_set(xan)) then begin
-  JWST[*,0]=v2
-  JWST[*,1]=-v3-7.8
+  JWST[*,0]=v2/60.
+  JWST[*,1]=-v3/60.-7.8
   JWST[*,2]=UnitVec
 ; Otherwise inputs really were v2,v3
 endif else begin
-  JWST[*,0]=v2
-  JWST[*,1]=v3
+  JWST[*,0]=v2/60.
+  JWST[*,1]=v3/60.
   JWST[*,2]=UnitVec
 endelse
 

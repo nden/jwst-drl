@@ -20,8 +20,8 @@ deczp=0.D
 ROLLREF=0.D
 
 ; Define V2REF, V3REF at middle of 1A field (alpha=beta=0.0)
-V2REF = -8.3942412d ; In arcmin
-V3REF = -5.3123744d ; In arcmin
+V2REF = -8.3942412d*60. ; In arcsec
+V3REF = -5.3123744d*60. ; In arcsec
 
 ; Only care about ch1a, find those files and their background
 ; exposures
@@ -63,11 +63,11 @@ for i=0,nfiles-1 do begin
   osim_xact=fxpar(hdr,'XACTPOS')
   osim_yact=fxpar(hdr,'YACTPOS')
   ; Convert to V2,V3 positions of the OSIM point source
-  v2=osim_xact
-  v3=-(osim_yact+7.8)
+  v2=osim_xact*60.
+  v3=-(osim_yact+7.8)*60.
   ; Calculate the deltav2 and deltav3 relative to the reference point
-  dv2=(v2-V2REF)/60.*cos(V3REF/60.*!PI/180.); Arc offset in degrees
-  dv3=(v3-V3REF)/60.; Arc offset in degrees
+  dv2=(v2-V2REF)/3600.*cos(V3REF/60.*!PI/180.); Arc offset in degrees
+  dv3=(v3-V3REF)/3600.; Arc offset in degrees
   dra=dv2*cos(ROLLREF*!PI/180.)+dv3*sin(ROLLREF*!PI/180.)
   ddec=-dv2*sin(ROLLREF*!PI/180.)+dv3*cos(ROLLREF*!PI/180.)
   ; Figure out corresponding RA,DEC location

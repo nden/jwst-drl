@@ -50,7 +50,7 @@ if ((band eq '1A')or(band eq '1B')or(band eq '1C')) then begin
   xmax=509; Maximum x pixel
 
   ; Output cube parameters
-  rlim_arcsec=0.1; in arcseconds
+  rlim_arcsec=0.15; in arcseconds
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron
@@ -62,7 +62,7 @@ if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
   xmax=1020; Maximum x pixel
 
   ; Output cube parameters
-  rlim_arcsec=0.1; in arcseconds
+  rlim_arcsec=0.15; in arcseconds
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron
@@ -125,8 +125,8 @@ master_expnum=intarr(nindex0*nfiles)
 ; Loop over input files reading them into master vectors
 for i=0,nfiles-1 do begin
   thisimg=(mrdfits(files[i],0,hdr))[*,*,0]
-  ; Crop to correct 1/2 of detector (add 4 pixels b/c of simulator issue)
-  thisflux=thisimg[xmin+4:xmax+4,*]
+  ; Crop to correct 1/2 of detector
+  thisflux=thisimg[xmin:xmax,*]
   ; Crop to only pixels on real slices
   thisflux=thisflux[index0]
   master_flux[i*nindex0:(i+1)*nindex0-1]=thisflux
@@ -138,6 +138,13 @@ for i=0,nfiles-1 do begin
   master_lam[i*nindex0:(i+1)*nindex0-1]=baselambda
   master_expnum[i*nindex0:(i+1)*nindex0-1]=i
 endfor
+
+; Safety case; deal with 0-360 range to ensure no problems
+; around ra=0 with coordinate wraparound
+medra=median(master_ra)
+wrapind=where(abs(master_ra - medra) gt 180.,nwrap)
+if ((nwrap ne 0)and(medra lt 180.)) then master_ra[wrapind]=master_ra[wrapind]-360.
+if ((nwrap ne 0)and(medra ge 180.)) then master_ra[wrapind]=master_ra[wrapind]+360.
 
 ; Trim to eliminate any nan fluxes
 index1=where(finite(master_flux) eq 1)
