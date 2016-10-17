@@ -247,14 +247,14 @@ device,/close
 plotname='siaf_'+channel+'v2v3_common.ps'
 device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
-plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel,thick=5,charthick=5,xthick=5,ythick=5
+plot,v2_corners[*,0],v3_corners[*,0],/nodata,xrange=[-8.29*60.,-8.49*60.],yrange=[-5.43*60.,-5.23*60.],xstyle=1,ystyle=1,xtitle='V2',ytitle='V3',xcharsize=1.3,ycharsize=1.3,xmargin=12,ymargin=5,title=channel,thick=5,charthick=5,xthick=5,ythick=5
 for i=0,nslices-1 do begin
   oplot,[v2_corners[*,i],v2_corners[0,i]],[v3_corners[*,i],v3_corners[0,i]],color=colors[i],thick=3
   oplot,[slice_v2_ref[i]],[slice_v3_ref[i]],psym=1,color=colors[i],thick=3
 endfor
 oplot,[v2_ref],[v3_ref],psym=1,thick=3,symsize=2
 oplot,[inscr_v2,inscr_v2[0]],[inscr_v3,inscr_v3[0]],thick=3
-oplot,[-8.3942412], [-5.3123744],psym=1,thick=3
+oplot,[-8.3942412*60.], [-5.3123744*60.],psym=1,thick=3
 device,/close
 set_plot,'x'
 
