@@ -213,7 +213,7 @@ mkhdr,imhdr,collapse
   sxaddpar, imhdr, 'CRPIX2', ycen, 'Reference pixel (1-indexed)'
   sxaddpar, imhdr, 'CRVAL1', racen
   sxaddpar, imhdr, 'CRVAL2', decen
-  sxaddpar, imhdr, 'CD1_1', -2.77778e-4*ps_x
+  sxaddpar, imhdr, 'CD1_1', 2.77778e-4*ps_x
   sxaddpar, imhdr, 'CD2_2', 2.77778e-4*ps_y
   sxaddpar, imhdr, 'CTYPE1', 'RA---TAN'
   sxaddpar, imhdr, 'CTYPE2', 'DEC--TAN'
@@ -230,7 +230,7 @@ if (~keyword_set(imonly)) then begin
   sxaddpar, cubehdr, 'CRPIX2', ycen, 'Reference pixel (1-indexed)'
   sxaddpar, cubehdr, 'CRVAL1', racen
   sxaddpar, cubehdr, 'CRVAL2', decen
-  sxaddpar, cubehdr, 'CD1_1', -2.77778e-4*ps_x
+  sxaddpar, cubehdr, 'CD1_1', 2.77778e-4*ps_x
   sxaddpar, cubehdr, 'CD2_2', 2.77778e-4*ps_y
   sxaddpar, cubehdr, 'CTYPE1', 'RA---TAN'
   sxaddpar, cubehdr, 'CTYPE2', 'DEC--TAN'
