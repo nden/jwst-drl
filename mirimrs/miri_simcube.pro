@@ -1,6 +1,14 @@
 pro miri_simcube,directory,band,imonly=imonly
 
-;band='1A'
+subband=strupcase(strmid(band,1,1));A,B, or C
+if (subband eq 'A') then subband_name='SHORT'
+if (subband eq 'B') then subband_name='MEDIUM'
+if (subband eq 'C') then subband_name='LONG'
+
+if ((subband ne 'A')and(subband ne 'B')and(subband ne 'C')) then begin
+  print,'Subband not known!'
+  exit
+endif
 
 ; Log runtime
 stime0 = systime(1)
@@ -125,6 +133,14 @@ master_expnum=intarr(nindex0*nfiles)
 ; Loop over input files reading them into master vectors
 for i=0,nfiles-1 do begin
   thisimg=(mrdfits(files[i],0,hdr))[*,*,0]
+
+  ; Check that this is correct band
+  thisband=strtrim(fxpar(hdr,'BAND'),2)
+  if (thisband ne subband_name) then begin
+    print,'Band mismatch: input file is not band ',subband_name
+    exit
+  endif
+
   ; Crop to correct 1/2 of detector
   thisflux=thisimg[xmin:xmax,*]
   ; Crop to only pixels on real slices
