@@ -98,7 +98,8 @@ for i=0,nfiles-1 do begin
     ; Translate from Oct 2016 mirisim header keywords
     ; to my conventional keywords.  Mirisim currently uses
     ; an odd frame with reference point v2=0,v3=-2.8247328
-    ; that is flipped in the DEC direction
+    ; that is flipped in the DEC direction.  Actually, this is just
+    ; an artifact of the DEC direction being flipped in mirisim.
     temp1=fxpar(hdr,'V2_REF')
     temp2=fxpar(hdr,'V3_REF')
     temp3=fxpar(hdr,'RA_REF')
@@ -107,6 +108,7 @@ for i=0,nfiles-1 do begin
     V2REF = -8.3942412d ; In arcmin
     V3REF = -5.3123744d ; In arcmin
     jwst_v2v3toradec,V2REF,V3REF,ra,dec,V2REF=temp1,V3REF=temp2,RAREF=temp3,DECREF=temp4,ROLLREF=temp5
+
     RAREF=ra[0]
     DECREF=-dec[0]
     ROLLREF=temp5
