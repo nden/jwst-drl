@@ -124,58 +124,59 @@ siaf4c=yanny_readone(concat_dir(siafdir,'siaf_4C.par'))
 
 plotname=concat_dir(outdir,'dithers.ps')
 set_plot,'ps'
-device,filename=plotname,/color
+device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Plot field bounding boxes
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],/xstyle,/ystyle,xthick=3,ythick=3,thick=2,charsize=1.5,xtitle='V2 (arcmin)',ytitle='V3 (arcmin)',charthick=1.2,title='Dithers'
-oplot,box1B_v2,box1B_v3
-oplot,box1C_v2,box1C_v3
-oplot,box2A_v2,box2A_v3,color=100
-oplot,box2B_v2,box2B_v3,color=100
-oplot,box2C_v2,box2C_v3,color=100
-oplot,box3A_v2,box3A_v3,color=150
-oplot,box3B_v2,box3B_v3,color=150
-oplot,box3C_v2,box3C_v3,color=150
-oplot,box4A_v2,box4A_v3,color=250
-oplot,box4B_v2,box4B_v3,color=250
-oplot,box4C_v2,box4C_v3,color=250
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcmin)',ytitle='V3 (arcmin)',charthick=4,title='MRS Dithers'
+oplot,box1A_v2,box1A_v3,color=60,thick=4
+oplot,box1B_v2,box1B_v3,color=60,thick=4
+oplot,box1C_v2,box1C_v3,color=60,thick=4
+oplot,box2A_v2,box2A_v3,color=140,thick=4
+oplot,box2B_v2,box2B_v3,color=140,thick=4
+oplot,box2C_v2,box2C_v3,color=140,thick=4
+oplot,box3A_v2,box3A_v3,color=200,thick=4
+oplot,box3B_v2,box3B_v3,color=200,thick=4
+oplot,box3C_v2,box3C_v3,color=200,thick=4
+oplot,box4A_v2,box4A_v3,color=250,thick=4
+oplot,box4B_v2,box4B_v3,color=250,thick=4
+oplot,box4C_v2,box4C_v3,color=250,thick=4
 
 ; Plot dither points 33-40 simply
-oplot,siaf1a[0].v2_ref-dithers[32:39].dxidl/60.,siaf1a[0].v3_ref+dithers[32:39].dyidl/60.,psym=1
+oplot,siaf1a[0].v2_ref-dithers[32:39].dxidl/60.,siaf1a[0].v3_ref+dithers[32:39].dyidl/60.,psym=1,thick=4
 
 ; Plot dither points 1-32 with circles showing PSF FWHM
 theta=findgen(360)
-oplot,siaf1a[0].v2_ref-dithers[0:7].dxidl/60.,siaf1a[0].v3_ref+dithers[0:7].dyidl/60.,psym=1
+oplot,siaf1a[0].v2_ref-dithers[0:7].dxidl/60.,siaf1a[0].v3_ref+dithers[0:7].dyidl/60.,psym=1,thick=4,color=60
 rad=0.3/60.
 for i=0,7 do begin
-  xtemp=siaf1a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.)
-  ytemp=siaf1a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.)
-  oplot,xtemp,ytemp
+  xtemp=siaf1a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),thick=4,color=60
+  ytemp=siaf1a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),thick=4,color=60
+  ;oplot,xtemp,ytemp
 endfor
 
-oplot,siaf2a[0].v2_ref-dithers[8:15].dxidl/60.,siaf2a[0].v3_ref+dithers[8:15].dyidl/60.,psym=1,color=100
+oplot,siaf2a[0].v2_ref-dithers[8:15].dxidl/60.,siaf2a[0].v3_ref+dithers[8:15].dyidl/60.,psym=1,color=140,thick=4
 rad=0.3/60.
 for i=8,15 do begin
-  xtemp=siaf2a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.)
-  ytemp=siaf2a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.)
-  oplot,xtemp,ytemp,color=100
+  xtemp=siaf2a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),color=140,thick=4
+  ytemp=siaf2a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),color=140,thick=4
+  ;oplot,xtemp,ytemp,color=100
 endfor
 
-oplot,siaf3a[0].v2_ref-dithers[16:23].dxidl/60.,siaf3a[0].v3_ref+dithers[16:23].dyidl/60.,psym=1,color=150
+oplot,siaf3a[0].v2_ref-dithers[16:23].dxidl/60.,siaf3a[0].v3_ref+dithers[16:23].dyidl/60.,psym=1,color=200,thick=4
 rad=0.3/60.
 for i=16,23 do begin
-  xtemp=siaf3a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.)
-  ytemp=siaf3a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.)
-  oplot,xtemp,ytemp,color=150
+  xtemp=siaf3a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),color=200,thick=4
+  ytemp=siaf3a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),color=200,thick=4
+  ;oplot,xtemp,ytemp,color=150
 endfor
 
-oplot,siaf4a[0].v2_ref-dithers[24:31].dxidl/60.,siaf4a[0].v3_ref+dithers[24:31].dyidl/60.,psym=1,color=250
+oplot,siaf4a[0].v2_ref-dithers[24:31].dxidl/60.,siaf4a[0].v3_ref+dithers[24:31].dyidl/60.,psym=1,color=250,thick=4
 rad=0.3/60.
 for i=24,31 do begin
-  xtemp=siaf4a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.)
-  ytemp=siaf4a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.)
-  oplot,xtemp,ytemp,color=250
+  xtemp=siaf4a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),color=250,thick=4
+  ytemp=siaf4a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),color=250,thick=4
+  ;oplot,xtemp,ytemp,color=250
 endfor
 
 device,/close
