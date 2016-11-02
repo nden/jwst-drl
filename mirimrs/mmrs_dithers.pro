@@ -15,7 +15,7 @@ if (~keyword_set(rootdir)) then $
 
 ; This is where the SIAF parameter files created from mmrs_siaf live
 if (~keyword_set(siafdir)) then $
-  siafdir='/Users/dlaw/STSCI/MIRI/SIAF/MRS/Sep2016/'
+  siafdir='/Users/dlaw/STSCI/MIRI/SIAF/MRS/Nov2016/'
 
 ; This is where the results will go
 if (~keyword_set(outdir)) then $
@@ -128,7 +128,7 @@ device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Plot field bounding boxes
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49],yrange=[-5.43,-5.23],/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcmin)',ytitle='V3 (arcmin)',charthick=4,title='MRS Dithers'
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers'
 oplot,box1A_v2,box1A_v3,color=60,thick=4
 oplot,box1B_v2,box1B_v3,color=60,thick=4
 oplot,box1C_v2,box1C_v3,color=60,thick=4
@@ -143,40 +143,40 @@ oplot,box4B_v2,box4B_v3,color=250,thick=4
 oplot,box4C_v2,box4C_v3,color=250,thick=4
 
 ; Plot dither points 33-40 simply
-oplot,siaf1a[0].v2_ref-dithers[32:39].dxidl/60.,siaf1a[0].v3_ref+dithers[32:39].dyidl/60.,psym=1,thick=4
-
+oplot,siaf1a[0].v2_ref-dithers[32:39].dxidl,siaf1a[0].v3_ref+dithers[32:39].dyidl,psym=1,thick=4
+stop
 ; Plot dither points 1-32 with circles showing PSF FWHM
 theta=findgen(360)
-oplot,siaf1a[0].v2_ref-dithers[0:7].dxidl/60.,siaf1a[0].v3_ref+dithers[0:7].dyidl/60.,psym=1,thick=4,color=60
+oplot,siaf1a[0].v2_ref-dithers[0:7].dxidl,siaf1a[0].v3_ref+dithers[0:7].dyidl,psym=1,thick=4,color=60
 rad=0.3/60.
 for i=0,7 do begin
-  xtemp=siaf1a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),thick=4,color=60
-  ytemp=siaf1a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),thick=4,color=60
-  ;oplot,xtemp,ytemp
+  xtemp=siaf1a[0].v2_ref-dithers[i].dxidl+rad*cos(theta*!PI/180.)
+  ytemp=siaf1a[0].v3_ref+dithers[i].dyidl+rad*sin(theta*!PI/180.)
+  ;oplot,xtemp,ytemp,thick=4,color=60
 endfor
 
-oplot,siaf2a[0].v2_ref-dithers[8:15].dxidl/60.,siaf2a[0].v3_ref+dithers[8:15].dyidl/60.,psym=1,color=140,thick=4
+oplot,siaf2a[0].v2_ref-dithers[8:15].dxidl,siaf2a[0].v3_ref+dithers[8:15].dyidl,psym=1,color=140,thick=4
 rad=0.3/60.
 for i=8,15 do begin
-  xtemp=siaf2a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),color=140,thick=4
-  ytemp=siaf2a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),color=140,thick=4
-  ;oplot,xtemp,ytemp,color=100
+  xtemp=siaf2a[0].v2_ref-dithers[i].dxidl+rad*cos(theta*!PI/180.)
+  ytemp=siaf2a[0].v3_ref+dithers[i].dyidl+rad*sin(theta*!PI/180.)
+  ;oplot,xtemp,ytemp,color=140,thick=4
 endfor
 
-oplot,siaf3a[0].v2_ref-dithers[16:23].dxidl/60.,siaf3a[0].v3_ref+dithers[16:23].dyidl/60.,psym=1,color=200,thick=4
+oplot,siaf3a[0].v2_ref-dithers[16:23].dxidl,siaf3a[0].v3_ref+dithers[16:23].dyidl,psym=1,color=200,thick=4
 rad=0.3/60.
 for i=16,23 do begin
-  xtemp=siaf3a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),color=200,thick=4
-  ytemp=siaf3a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),color=200,thick=4
-  ;oplot,xtemp,ytemp,color=150
+  xtemp=siaf3a[0].v2_ref-dithers[i].dxidl+rad*cos(theta*!PI/180.)
+  ytemp=siaf3a[0].v3_ref+dithers[i].dyidl+rad*sin(theta*!PI/180.)
+  ;oplot,xtemp,ytemp,color=200,thick=4
 endfor
 
-oplot,siaf4a[0].v2_ref-dithers[24:31].dxidl/60.,siaf4a[0].v3_ref+dithers[24:31].dyidl/60.,psym=1,color=250,thick=4
+oplot,siaf4a[0].v2_ref-dithers[24:31].dxidl,siaf4a[0].v3_ref+dithers[24:31].dyidl,psym=1,color=250,thick=4
 rad=0.3/60.
 for i=24,31 do begin
-  xtemp=siaf4a[0].v2_ref-dithers[i].dxidl/60.+rad*cos(theta*!PI/180.),color=250,thick=4
-  ytemp=siaf4a[0].v3_ref+dithers[i].dyidl/60.+rad*sin(theta*!PI/180.),color=250,thick=4
-  ;oplot,xtemp,ytemp,color=250
+  xtemp=siaf4a[0].v2_ref-dithers[i].dxidl+rad*cos(theta*!PI/180.)
+  ytemp=siaf4a[0].v3_ref+dithers[i].dyidl+rad*sin(theta*!PI/180.)
+  ;oplot,xtemp,ytemp,color=250,thick=4
 endfor
 
 device,/close
