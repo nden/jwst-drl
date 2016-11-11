@@ -219,9 +219,6 @@ endif else begin
     ; back to degrees
     v2[i]=atan(outvector[1],outvector[0])*180.d/!DPI
 
-    ; Ensure 0-360 degrees
-    if (v2[i] lt 0.d) then v2[i]=v2[i]+360.d
-
     ; Convert to arcsec
     v2[i]=v2[i]*3600.
 

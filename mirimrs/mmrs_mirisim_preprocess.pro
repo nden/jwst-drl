@@ -1,9 +1,54 @@
-; 17-Oct-2016 Modify to use coordinate keywords in mirisim headers.
-; Use slopes instead of subtracting reference exposures
+;+
+; NAME:
+;   mmrs_mirisim_preprocess
+;
+; PURPOSE:
+;   Convert mirisim output files to a format that can be further processed
+;   by DRL cube building code or the JWST pipeline.
+;
+;   Originally, this meant digging through the logs and mirisim code
+;   structure to put the WCS reference keywords in the headers.
+;   Later this information was already in the headers, but was
+;   incorrectly defined so had to be tweaked.
+;
+;   Puts the results in a preproc/ directory.
+;
+;   Note that this code originally changed the FORMAT of the data too,
+;   applying a very simple minded ramps-to-slopes module.  It no
+;   longer does so.
+;
+; CALLING SEQUENCE:
+;   mmrs_mirisim_preprocess,directory
+;
+; INPUTS:
+;   directory - mirisim input directory (e.g., 20161018_163749_mirisim/)
+;
+; OPTIONAL INPUTS:
+;
+; OUTPUT:
+;   Outputs are the input files cloned into the new directory with
+;   modified headers.
 
-; Take the output of a mirisim simulation and convert it to a format
-; useful for building cubes.  This means adding some WCS keywords
-; and doing a very rough ramp-slope correction.
+; OPTIONAL OUTPUT:
+;
+; COMMENTS:
+;
+; EXAMPLES:
+;
+; BUGS:
+;   The dither-table dependent method hasn't been checked recently.
+;
+; PROCEDURES CALLED:
+;
+; INTERNAL SUPPORT ROUTINES:
+;   mmrs_mirisim_dloc()
+;
+; REVISION HISTORY:
+;   Early 2016  Written by David Law (dlaw@stsci.edu)
+;   17-Oct-2016  Use coordinate keywords in header
+;   10-Nov-2016  Remove format changes, use arcsec for v2,v3, general overhaul
+;-
+;------------------------------------------------------------------------------
 
 ; Convert a nominal dither offset in alpha,beta
 ; to offset in ra, dec
@@ -12,8 +57,8 @@ pro mmrs_mirisim_dloc,aoff,boff,ROLLREF,raoff,decoff
 ; Convert alpha,beta offsets to v2, v3
 mmrs_abtov2v3,0.,0.,v2ref,v3ref,'1A'
 mmrs_abtov2v3,aoff,boff,v2off,v3off,'1A'
-v2off=-(v2off-v2ref)*60.
-v3off=-(v3off-v3ref)*60.
+v2off=-(v2off-v2ref)
+v3off=-(v3off-v3ref)
 
 raoff=v2off*cos(ROLLREF*!PI/180.)+v3off*sin(ROLLREF*!PI/180.)
 decoff=-v2off*sin(ROLLREF*!PI/180.)+v3off*cos(ROLLREF*!PI/180.)
@@ -21,7 +66,8 @@ decoff=-v2off*sin(ROLLREF*!PI/180.)+v3off*cos(ROLLREF*!PI/180.)
 return
 end
 
-;/oldwcs uses the old method of looking up the alpha,beta dither table
+;------------------------------------------------------------------------------
+
 pro mmrs_mirisim_preprocess,directory,oldwcs=oldwcs
 
 ; directory is a local directory path, inside which it will look
@@ -34,11 +80,15 @@ infiles=file_search(indir,'*.fits')
 nfiles=n_elements(infiles)
 outfiles=infiles
 for i=0,nfiles-1 do begin
-  outfiles[i]=ml_strreplace(infiles[i],'det_image_','preproc_')
   outfiles[i]=ml_strreplace(outfiles[i],'det_images','preproc')
+  spawn, 'cp '+infiles[i]+' '+outfiles[i]
 endfor
 
-if (keyword_set(oldwcs)) then begin
+; Look in the first file to see if we have header keywords
+hdr=headfits(infiles[0])
+temp=sxpar(hdr,'V3_REF',count=count)
+; If not, read in reference dither table
+if (count eq 0) then begin
   ditherfile=concat_dir(getenv('MIRISIM_DIR'),'obssim/data/mrs_recommended_dither.dat')
   ; Table of possible dither positions (2 x N)
   dithertable=(read_ascii(ditherfile)).field1
@@ -59,30 +109,26 @@ if (keyword_set(oldwcs)) then begin
   endwhile
   close,lun
   free_lun,lun
-
   ; Pretend we're pointing at RA=45 degrees, dec=0 degrees
   ; with local roll 0
-  razp=0.D
+  razp=45.D
   deczp=0.D
   ROLLREF=0.D
   ; Define V2REF, V3REF at middle of 1A field (alpha=beta=0.0)
-  V2REF = -8.3942412d ; In arcmin
-  V3REF = -5.3123744d ; In arcmin
+  V2REF = -8.3942412d*60 ; In arcsec
+  V3REF = -5.3123744d*60 ; In arcsec
 endif
 
+
+; Loop over files
 for i=0,nfiles-1 do begin
   hdr=headfits(infiles[i])
-  raw=mrdfits(infiles[i],1)
-  thisdet=fxpar(hdr,'DETECTOR')
-  thisband=fxpar(hdr,'BAND')
 
-  ndim=size(raw,/dim)
-  ; Take difference of first and last frames
-  lf=raw[*,*,ndim[2]-1,*]-raw[*,*,0,*]
-  ; Median across each integration to reject cosmics
-  frame=median(lf,dimension=4)
+  ; Do the headers contain the WCS keywords?
+  temp=sxpar(hdr,'V3_REF',count=count)
 
-  if (keyword_set(oldwcs)) then begin
+  ; If no header keywords, dig them up the old way
+  if (count eq 0) then begin
     ditherno=dstart+fxpar(hdr,'PNTG_SEQ')-1; Add starting point, convert to 0 indexed
     ; Add dither offset keywords.
     aoffset=dithertable[0,ditherno]; In alpha
@@ -91,22 +137,22 @@ for i=0,nfiles-1 do begin
     mmrs_mirisim_dloc,aoffset,boffset,ROLLREF,dra,ddec
     ; Figure out corresponding RA,DEC location
     ; (subtract because we're pretending that the telescope moved
-    ; instead of the point source?)
+    ; instead of the point source)
     RAREF=razp-dra/cos(deczp*!PI/180.)/3600.D
     DECREF=deczp-ddec/3600.D
-  endif else begin
+  endif else begin   ; If there are header keywords, process them
     ; Translate from Oct 2016 mirisim header keywords
     ; to my conventional keywords.  Mirisim currently uses
-    ; an odd frame with reference point v2=0,v3=-2.8247328
+    ; an odd frame with reference point v2=0,v3=-2.8247328 arcmin
     ; that is flipped in the DEC direction.  Actually, this is just
     ; an artifact of the DEC direction being flipped in mirisim.
-    temp1=fxpar(hdr,'V2_REF')
-    temp2=fxpar(hdr,'V3_REF')
+    temp1=fxpar(hdr,'V2_REF')*60.
+    temp2=fxpar(hdr,'V3_REF')*60.
     temp3=fxpar(hdr,'RA_REF')
     temp4=fxpar(hdr,'DEC_REF')
     temp5=fxpar(hdr,'ROLL_REF')
-    V2REF = -8.3942412d ; In arcmin
-    V3REF = -5.3123744d ; In arcmin
+    V2REF = -8.3942412d*60. ; In arcsec
+    V3REF = -5.3123744d*60. ; In arcsec
     jwst_v2v3toradec,V2REF,V3REF,ra,dec,V2REF=temp1,V3REF=temp2,RAREF=temp3,DECREF=temp4,ROLLREF=temp5
 
     RAREF=ra[0]
@@ -114,14 +160,15 @@ for i=0,nfiles-1 do begin
     ROLLREF=temp5
   endelse
 
+  ; Add (or overwrite) these keywords into header
   fxaddpar,hdr,'V2_REF',V2REF
   fxaddpar,hdr,'V3_REF',V3REF
   fxaddpar,hdr,'ROLL_REF',ROLLREF
   fxaddpar,hdr,'RA_REF',RAREF
   fxaddpar,hdr,'DEC_REF',DECREF
 
-  ; Write out
-  writefits,outfiles[i],frame,hdr
+  ; Modify 0th extension headers
+  modfits,outfiles[i],0,hdr,exten_no=0
 endfor
 
 

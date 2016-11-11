@@ -1,3 +1,5 @@
+; Modified 11/10/16 to do super-crude ramps to slopes in this code
+; instead of in the preprocess routine
 pro miri_simcube,directory,band,imonly=imonly
 
 subband=strupcase(strmid(band,1,1));A,B, or C
@@ -40,8 +42,9 @@ v3ref=dblarr(nfiles)
 ; Loop over inputs reading dither positions
 for i=0,nfiles-1 do begin
   hdr=headfits(files[i])
+  hdr1=headfits(files[i],exten=1)
   
-  if (i eq 0) then ny=fix(sxpar(hdr,'NAXIS2'))
+  if (i eq 0) then ny=fix(sxpar(hdr1,'NAXIS2'))
 
   raref[i]=sxpar(hdr,'RA_REF')
   decref[i]=sxpar(hdr,'DEC_REF')
@@ -132,7 +135,15 @@ master_expnum=intarr(nindex0*nfiles)
 
 ; Loop over input files reading them into master vectors
 for i=0,nfiles-1 do begin
-  thisimg=(mrdfits(files[i],0,hdr))[*,*,0]
+  hdr=headfits(files[i])
+  raw=mrdfits(files[i],1)
+
+  ; Super-crude ramps to slopes
+  ndim=size(raw,/dim)
+  ; Take difference of first and last frames
+  lf=raw[*,*,ndim[2]-1,*]-raw[*,*,0,*]
+  ; Median across each integration to reject cosmics
+  thisimg=median(lf,dimension=4)
 
   ; Check that this is correct band
   thisband=strtrim(fxpar(hdr,'BAND'),2)
@@ -222,7 +233,7 @@ fwhmy=round(coeff[3]*2.355*ps_y*1e3)/1e3
 print,'Wavelength (micron): ',slice*ps_z+min(baselambda)
 print,'X FWHM (arcsec): ',fwhmx
 print,'Y FWHM (arcsec): ',fwhmy
-
+stop
 collapse=im
 mkhdr,imhdr,collapse
   sxaddpar, imhdr, 'CRPIX1', xcen, 'Reference pixel (1-indexed)'
