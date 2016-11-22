@@ -233,7 +233,7 @@ fwhmy=round(coeff[3]*2.355*ps_y*1e3)/1e3
 print,'Wavelength (micron): ',slice*ps_z+min(baselambda)
 print,'X FWHM (arcsec): ',fwhmx
 print,'Y FWHM (arcsec): ',fwhmy
-stop
+
 collapse=im
 mkhdr,imhdr,collapse
   sxaddpar, imhdr, 'CRPIX1', xcen, 'Reference pixel (1-indexed)'
