@@ -1,6 +1,6 @@
-; Preprocess Lvl2b CV3 MRS data
-; to add dither information.
-; Also do background subtraction.
+; NOTE: this file is now out of data and won't work as of Dec 2016
+; You should use Jane's processed Lvl2b CV3 data which has
+; appropriate keywords.
 
 pro mmrs_cv3_preprocess,directory,outdir=outdir
 
