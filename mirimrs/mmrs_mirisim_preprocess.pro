@@ -143,20 +143,24 @@ for i=0,nfiles-1 do begin
   endif else begin   ; If there are header keywords, process them
     ; Translate from Oct 2016 mirisim header keywords
     ; to my conventional keywords.  Mirisim currently uses
-    ; an odd frame with reference point v2=0,v3=-2.8247328 arcmin
-    ; that is flipped in the DEC direction.  Actually, this is just
-    ; an artifact of the DEC direction being flipped in mirisim.
+    ; an odd frame with reference point nearly but not quite XAN,YAN
+    ; that is flipped in the DEC direction.
+    ; Hard code this for now in a way that will probably fail for 
+    ; ROLL ne 0
+    ;temp1=-1.138;fxpar(hdr,'V2_REF')*60.
+    ;temp2=-468.363;fxpar(hdr,'V3_REF')*60.-7.8*60.
     temp1=fxpar(hdr,'V2_REF')*60.
-    temp2=fxpar(hdr,'V3_REF')*60.
+    temp2=fxpar(hdr,'V3_REF')*60.-7.8*60.
     temp3=fxpar(hdr,'RA_REF')
-    temp4=fxpar(hdr,'DEC_REF')
+    temp4=-fxpar(hdr,'DEC_REF')
     temp5=fxpar(hdr,'ROLL_REF')
+
     V2REF = -8.3942412d*60. ; In arcsec
     V3REF = -5.3123744d*60. ; In arcsec
     jwst_v2v3toradec,V2REF,V3REF,ra,dec,V2REF=temp1,V3REF=temp2,RAREF=temp3,DECREF=temp4,ROLLREF=temp5
 
     RAREF=ra[0]
-    DECREF=-dec[0]
+    DECREF=dec[0]
     ROLLREF=temp5
   endelse
 

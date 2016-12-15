@@ -38,7 +38,7 @@ if (keyword_set(rampdata)) then begin
     files=file_search(concat_dir(indir,'*MIRIFULONG*'))
   endelse
 endif else begin
-  filter=strcompress(directory+'*wcs.fits',/remove_all)
+  filter=strcompress(directory+'*.fits',/remove_all)
   files = dialog_pickfile( title='Read Files to Process', $
                                      filter=filter, $
                                      get_path=new_path, $
@@ -76,6 +76,7 @@ if ((band eq '1A')or(band eq '1B')or(band eq '1C')) then begin
 
   ; Output cube parameters
   rlim_arcsec=0.15; in arcseconds
+  rlimz_mic=0.004;
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron
@@ -233,10 +234,10 @@ ypsf=1.0;.24;ypsf_arcsec/ps_y
 ; roi
 rlimx=rlim_arcsec/ps_x; in pixels
 rlimy=rlimx; in pixels
-rlimz=2.0
+rlimz=rlimz_mic/ps_z
 ; (Gives about 1-2 spec elements at each spatial element)
 rlim=[rlimx,rlimy,rlimz]; in pixels
-
+print,'rlim=',rlim
 
 ; Scale correction factor is the ratio of area between an input pixel
 ; (in arcsec^2) and the output pixel size in arcsec^2

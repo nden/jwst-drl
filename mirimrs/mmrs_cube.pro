@@ -122,6 +122,8 @@ oplot,circx,circy,color=250
           replicate(sry^2,nbox) + $
           replicate(srz^2,nbox)  )
 
+;stop
+
         ; Ensure no divide by zero
         if (ncalc gt 0) then begin
 
