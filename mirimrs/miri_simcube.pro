@@ -2,7 +2,10 @@
 ; Now works by default on Lvl2b processed data, but
 ; can work on ramps data too with /rampdata.
 
-pro miri_simcube,directory,band,imonly=imonly,rampdata=rampdata,slice=slice
+; stopx/stopy refer to locations in the output image and will
+; optionally stop the code here for debugging
+
+pro miri_simcube,directory,band,imonly=imonly,rampdata=rampdata,slice=slice,stopx=stopx,stopy=stopy
 
 subband=strupcase(strmid(band,1,1));A,B, or C
 if (subband eq 'A') then subband_name='SHORT'
@@ -152,6 +155,9 @@ master_ra=fltarr(nindex0*nfiles)
 master_dec=fltarr(nindex0*nfiles)
 master_lam=fltarr(nindex0*nfiles)
 master_expnum=intarr(nindex0*nfiles)
+; Create a master vector of detector pixel locations (debugging only)
+master_detx=intarr(nindex0*nfiles)
+master_dety=intarr(nindex0*nfiles)
 
 ; Loop over input files reading them into master vectors
 for i=0,nfiles-1 do begin
@@ -187,6 +193,8 @@ for i=0,nfiles-1 do begin
   master_dec[i*nindex0:(i+1)*nindex0-1]=dec
   master_lam[i*nindex0:(i+1)*nindex0-1]=baselambda
   master_expnum[i*nindex0:(i+1)*nindex0-1]=i
+  master_detx[i*nindex0:(i+1)*nindex0-1]=basex
+  master_dety[i*nindex0:(i+1)*nindex0-1]=basey
 endfor
 
 ; Safety case; deal with 0-360 range to ensure no problems
@@ -203,6 +211,8 @@ master_ra=master_ra[index1]
 master_dec=master_dec[index1]
 master_lam=master_lam[index1]
 master_expnum=master_expnum[index1]
+master_detx=master_detx[index1]
+master_dety=master_dety[index1]
 
 ; Reference location for output WCS
 racen=median(master_ra)
@@ -220,6 +230,7 @@ ycen=3600.*(decen-min(master_dec))/ps_y+0.05*cube_ysize+1; 1-indexed
 
 cube_z=(master_lam-min(master_lam))/ps_z ; Z output cube location in pixels
 cube_zsize=fix(max(cube_z))
+cube_wavesol=findgen(cube_zsize)*ps_z+min(master_lam)
 
 ; squash factors
 xpsf_arcsec=0.3
@@ -247,9 +258,14 @@ print,'rlim=',rlim
 scale=1.0/parea
 print,'scale=',scale
 
+if ((keyword_set(slice))and(keyword_set(stopx))and(keyword_set(stopy))) then $
+  print,'Will stop at ',stopx,' ',stopy,' ',cube_wavesol[slice],' microns'
+
 ; Make images at specified slice
 if (~keyword_set(slice)) then slice=50
-im=mmrs_cube(cube_x,cube_y,cube_z,master_flux,master_expnum,[cube_xsize,cube_ysize,cube_zsize],rlim,xsquash=xpsf,ysquash=ypsf,scale=scale,slice=slice,wtype=2,expsig=expsig)
+if (~keyword_set(stopx)) then stopx=-1
+if (~keyword_set(stopy)) then stopy=-1
+im=mmrs_cube(cube_x,cube_y,cube_z,master_flux,master_expnum,[cube_xsize,cube_ysize,cube_zsize],rlim,xsquash=xpsf,ysquash=ypsf,scale=scale,slice=slice,wtype=2,expsig=expsig,detx=master_detx,dety=master_dety,stopx=stopx,stopy=stopy)
 
 ; Recover gaussian FWHM
 imfit=gauss2dfit(im,coeff)
