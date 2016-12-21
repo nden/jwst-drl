@@ -128,7 +128,8 @@ device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Plot field bounding boxes
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers'
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers: Pre-flight (Dec 2016)'
+print,'Remember to update the date line in the code!'
 oplot,box1A_v2,box1A_v3,color=60,thick=4
 oplot,box1B_v2,box1B_v3,color=60,thick=4
 oplot,box1C_v2,box1C_v3,color=60,thick=4
