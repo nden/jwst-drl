@@ -145,7 +145,7 @@ oplot,box4C_v2,box4C_v3,color=250,thick=4
 
 ; Plot dither points 33-40 simply
 oplot,siaf1a[0].v2_ref-dithers[32:39].dxidl,siaf1a[0].v3_ref+dithers[32:39].dyidl,psym=1,thick=4
-stop
+
 ; Plot dither points 1-32 with circles showing PSF FWHM
 theta=findgen(360)
 oplot,siaf1a[0].v2_ref-dithers[0:7].dxidl,siaf1a[0].v3_ref+dithers[0:7].dyidl,psym=1,thick=4,color=60
@@ -184,6 +184,52 @@ device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 
+
+
+
+
+; Make a plot illustrating a 4-pt ALL dither
+plotname=concat_dir(outdir,'dithers_4ptall.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers: Pre-flight (Dec 2016)'
+print,'Remember to update the date line in the code!'
+oplot,siaf1a[0].v2_ref-dithers[0:3].dxidl,siaf1a[0].v3_ref+dithers[0:3].dyidl,psym=1,thick=4,color=60
+oplot,box1A_v2-dithers[0].dxidl,box1A_v3+dithers[0].dyidl,color=60,thick=4
+oplot,box1A_v2-dithers[1].dxidl,box1A_v3+dithers[1].dyidl,color=60,thick=4
+oplot,box1A_v2-dithers[2].dxidl,box1A_v3+dithers[2].dyidl,color=60,thick=4
+oplot,box1A_v2-dithers[3].dxidl,box1A_v3+dithers[3].dyidl,color=60,thick=4
+oplot,box4A_v2-dithers[0].dxidl,box4A_v3+dithers[0].dyidl,color=250,thick=4
+oplot,box4A_v2-dithers[1].dxidl,box4A_v3+dithers[1].dyidl,color=250,thick=4
+oplot,box4A_v2-dithers[2].dxidl,box4A_v3+dithers[2].dyidl,color=250,thick=4
+oplot,box4A_v2-dithers[3].dxidl,box4A_v3+dithers[3].dyidl,color=250,thick=4
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+
+
+
+; Make a plot illustrating a EXT dither
+plotname=concat_dir(outdir,'dithers_ext.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers: Pre-flight (Dec 2016)'
+print,'Remember to update the date line in the code!'
+oplot,siaf1a[0].v2_ref-dithers[32:33].dxidl,siaf1a[0].v3_ref+dithers[32:33].dyidl,psym=1,thick=4
+oplot,box1A_v2-dithers[32].dxidl,box1A_v3+dithers[32].dyidl,color=60,thick=4
+oplot,box1A_v2-dithers[33].dxidl,box1A_v3+dithers[33].dyidl,color=60,thick=4
+oplot,box4A_v2-dithers[32].dxidl,box4A_v3+dithers[32].dyidl,color=250,thick=4
+oplot,box4A_v2-dithers[33].dxidl,box4A_v3+dithers[33].dyidl,color=250,thick=4
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 return
 end
