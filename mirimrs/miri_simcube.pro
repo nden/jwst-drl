@@ -92,6 +92,7 @@ if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
 
   ; Output cube parameters
   rlim_arcsec=0.15; in arcseconds
+  rlimz_mic=0.004;
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron
@@ -104,6 +105,7 @@ if ((band eq '3A')or(band eq '3B')or(band eq '3C')) then begin
 
   ; Output cube parameters
   rlim_arcsec=0.1; in arcseconds
+  rlimz_mic=0.004;
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron
@@ -116,6 +118,7 @@ if ((band eq '4A')or(band eq '4B')or(band eq '4C')) then begin
 
   ; Output cube parameters
   rlim_arcsec=0.4; in arcseconds
+  rlimz_mic=0.004;
   ps_x=0.2; arcsec
   ps_y=0.2; arcsec
   ps_z=0.002; micron

@@ -6,7 +6,7 @@
 ; stopy which will stop at a particular cube x,y
 
 
-function mmrs_cube, x, y, z, f, expnum, dim_out, rlim, scale=scale, xsquash=xsquash, ysquash=ysquash, zsquash=zsquash, maskcube=maskcube,slice=slice, wtype=wtype, expsig=expsig, detx=detx, dety=dety, stopx=stopx, stopy=stopy
+function mmrs_cube, x, y, z, f, expnum, dim_out, rlim, scale=scale, xsquash=xsquash, ysquash=ysquash, zsquash=zsquash, maskcube=maskcube,slice=slice, wtype=wtype, expsig=expsig, detx=detx, dety=dety, detlam=detlam, stopx=stopx, stopy=stopy
 
 ; wtype:
 ; 1: 1/d weighting
@@ -22,6 +22,7 @@ if (~keyword_set(scale)) then scale=1.
 ; Add some defaults for non-necessary arguments so code doesn't crash without
 if (~keyword_set(detx)) then detx=replicate(1,n_elements(x))
 if (~keyword_set(dety)) then dety=replicate(1,n_elements(y))
+if (~keyword_set(detlam)) then detlam=replicate(1,n_elements(z))
 if (~keyword_set(stopx)) then stopx=-1
 if (~keyword_set(stopy)) then stopy=-1
 
@@ -71,6 +72,7 @@ for k=0,thisdim_out[2]-1 do begin
   tempenum=expnum[indexk]
   temp_detx=detx[indexk]
   temp_dety=dety[indexk]
+  temp_detlam=detlam[indexk]
 
 ; QA plot
 plot,tempx,tempy,psym=1
@@ -99,6 +101,7 @@ oplot,circx,circy,color=250
       tempenum2=tempenum[indexj]
       temp2_detx=temp_detx[indexj]
       temp2_dety=temp_dety[indexj]
+      temp2_detlam=temp_detlam[indexj]
 
       ; Now do a 1d build within this slice, looping over input points
       arr_weights=dblarr(thisdim_out[0],nindexj)
@@ -181,18 +184,22 @@ oplot,circx,circy,color=250
     if (nthis gt 0) then begin
       thispix_detx=temp2_detx[thispix]
       thispix_dety=temp2_dety[thispix]
+      thispix_detlam=temp2_detlam[thispix]
       thispix_dx=tempx2[thispix]-stopx
       thispix_dy=tempy2[thispix]-stopy
       thispix_dz=tempz2[thispix]-slice
       thispix_enum=tempenum2[thispix]
       thispix_flux=tempf2[thispix]
-      print,'exp xdet ydet xdist ydist zdist rxy flux'
       print,'HARDCODED 0.1 arcsec and 0.002 micron spaxels'
+      print,'Distances are in arcsec and microns'
+      print,'Debug location is: ',stopx,stopy,slice
+      print,'Final value is: ',fcube[stopx,j,k]
+      print,'exp xdet ydet wave xdist ydist zdist rxy flux nweight'
       for r=0,nthis-1 do begin
  ; NB- HARDCODING pixel size conversions to 0.1/0.1 arcsec and 0.002 micron
-        print,thispix_enum[r],thispix_detx[r],thispix_dety[r],thispix_dx[r]*0.1,thispix_dy[r]*0.1,thispix_dz[r]*0.002,sqrt(thispix_dx[r]^2+thispix_dy[r]^2)*0.1,thispix_flux[r]
+        print,thispix_enum[r],fix(thispix_detx[r]),fix(thispix_dety[r]),thispix_detlam[r],thispix_dx[r]*0.1,thispix_dy[r]*0.1,thispix_dz[r]*0.002,sqrt(thispix_dx[r]^2+thispix_dy[r]^2)*0.1,thispix_flux[r],temp[thispix[r]]/matr_norm[stopx]
       endfor
-
+      stop
     endif else begin
       print,'No non-zero weight contributing pixels!'
     endelse
