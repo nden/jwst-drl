@@ -6,6 +6,9 @@
 ; This is because APT works by applying the dithers optimized
 ; for Ch2,3,4 to the central point of those channels defining
 ; the pointing origin.
+;
+; As of Feb 2017, it also computes the 'EXTENDED SOURCE'
+; patterns based on the EC provided locations.
 
 pro mmrs_dithers,rootdir=rootdir,siafdir=siafdir,outdir=outdir
 
@@ -36,6 +39,37 @@ for i=1,8 do begin
   dithers[i*4-2].alpha1A=input[i*4-1].alpha1A
   dithers[i*4-1].beta1A=input[i*4-2].beta1A
   dithers[i*4-2].beta1A=input[i*4-1].beta1A
+endfor
+
+; Construct the extended source patterns based on points 1/3 and 5/7
+; of the original tables.  Recenter around their midpoint.
+dithers=[dithers,dithers[0:15]]
+; Loop over channels
+for i=0,3 do begin
+  ; Dither position indices
+  dithers[40+i*4+0].dpos=40+i*4+1
+  dithers[40+i*4+1].dpos=40+i*4+2
+  dithers[40+i*4+2].dpos=40+i*4+3
+  dithers[40+i*4+3].dpos=40+i*4+4
+  ; First pair is entries 1/3
+  mid_alpha=(dithers[i*8+0].alpha1a+dithers[i*8+2].alpha1a)/2.
+  mid_beta=(dithers[i*8+0].beta1a+dithers[i*8+2].beta1a)/2.
+  dithers[40+i*4+0].alpha1a=dithers[i*8+0].alpha1a-mid_alpha
+  dithers[40+i*4+1].alpha1a=dithers[i*8+2].alpha1a-mid_alpha
+  dithers[40+i*4+0].beta1a=dithers[i*8+0].beta1a-mid_beta
+  dithers[40+i*4+1].beta1a=dithers[i*8+2].beta1a-mid_beta
+  ; Second pair is entries 5/7
+  mid_alpha=(dithers[i*8+4].alpha1a+dithers[i*8+6].alpha1a)/2.
+  mid_beta=(dithers[i*8+4].beta1a+dithers[i*8+6].beta1a)/2.
+  dithers[40+i*4+2].alpha1a=dithers[i*8+4].alpha1a-mid_alpha
+  dithers[40+i*4+3].alpha1a=dithers[i*8+6].alpha1a-mid_alpha
+  dithers[40+i*4+2].beta1a=dithers[i*8+4].beta1a-mid_beta
+  dithers[40+i*4+3].beta1a=dithers[i*8+6].beta1a-mid_beta
+  ; Add band information
+  if (i eq 0) then dithers[40+i*4:40+(i+1)*4-1].band='1A'
+  if (i eq 1) then dithers[40+i*4:40+(i+1)*4-1].band='2A'
+  if (i eq 2) then dithers[40+i*4:40+(i+1)*4-1].band='3A'
+  if (i eq 3) then dithers[40+i*4:40+(i+1)*4-1].band='4A'
 endfor
 
 dithers=jjadd_tag(dithers,'v2',0.)
@@ -122,14 +156,20 @@ siaf4c=yanny_readone(concat_dir(siafdir,'siaf_4C.par'))
   box4C_v2=[siaf4c[0].v2_ll,siaf4c[0].v2_ul,siaf4c[0].v2_ur,siaf4c[0].v2_lr,siaf4c[0].v2_ll]
   box4C_v3=[siaf4c[0].v3_ll,siaf4c[0].v3_ul,siaf4c[0].v3_ur,siaf4c[0].v3_lr,siaf4c[0].v3_ll]
 
+
+
+
+thetime=strsplit(systime(),' ',/extract)
+thedate=strcompress(thetime[1]+' '+thetime[4])
+
+
 plotname=concat_dir(outdir,'dithers.ps')
 set_plot,'ps'
 device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Plot field bounding boxes
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers: Pre-flight (Dec 2016)'
-print,'Remember to update the date line in the code!'
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
 oplot,box1A_v2,box1A_v3,color=60,thick=4
 oplot,box1B_v2,box1B_v3,color=60,thick=4
 oplot,box1C_v2,box1C_v3,color=60,thick=4
@@ -186,8 +226,6 @@ spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 
 
-
-
 ; Make a plot illustrating a 4-pt ALL dither
 plotname=concat_dir(outdir,'dithers_4ptall.ps')
 set_plot,'ps'
@@ -195,8 +233,7 @@ device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Set up plot
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers: Pre-flight (Dec 2016)'
-print,'Remember to update the date line in the code!'
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
 oplot,siaf1a[0].v2_ref-dithers[0:3].dxidl,siaf1a[0].v3_ref+dithers[0:3].dyidl,psym=1,thick=4,color=60
 oplot,box1A_v2-dithers[0].dxidl,box1A_v3+dithers[0].dyidl,color=60,thick=4
 oplot,box1A_v2-dithers[1].dxidl,box1A_v3+dithers[1].dyidl,color=60,thick=4
@@ -213,15 +250,14 @@ spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 
 
-; Make a plot illustrating a EXT dither
-plotname=concat_dir(outdir,'dithers_ext.ps')
+; Make a plot illustrating a MOSAIC dither
+plotname=concat_dir(outdir,'dithers_mos.ps')
 set_plot,'ps'
 device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Set up plot
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title='MRS Dithers: Pre-flight (Dec 2016)'
-print,'Remember to update the date line in the code!'
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
 oplot,siaf1a[0].v2_ref-dithers[32:33].dxidl,siaf1a[0].v3_ref+dithers[32:33].dyidl,psym=1,thick=4
 oplot,box1A_v2-dithers[32].dxidl,box1A_v3+dithers[32].dyidl,color=60,thick=4
 oplot,box1A_v2-dithers[33].dxidl,box1A_v3+dithers[33].dyidl,color=60,thick=4
@@ -230,6 +266,29 @@ oplot,box4A_v2-dithers[33].dxidl,box4A_v3+dithers[33].dyidl,color=250,thick=4
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+
+
+; Make a plot illustrating a EXTENDED dither
+plotname=concat_dir(outdir,'dithers_ext.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,siaf1a[0].v2_ref-dithers[32:33].dxidl,siaf1a[0].v3_ref+dithers[32:33].dyidl,psym=1,thick=4
+oplot,box1A_v2-dithers[40].dxidl,box1A_v3+dithers[40].dyidl,color=60,thick=4
+oplot,box1A_v2-dithers[41].dxidl,box1A_v3+dithers[41].dyidl,color=60,thick=4
+oplot,box4A_v2-dithers[40].dxidl,box4A_v3+dithers[40].dyidl,color=250,thick=4
+oplot,box4A_v2-dithers[41].dxidl,box4A_v3+dithers[41].dyidl,color=250,thick=4
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+
+
+
 
 return
 end
