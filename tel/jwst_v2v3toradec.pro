@@ -203,7 +203,7 @@ endif else begin
   NEWROLL=dblarr(n_elements(v2))
 
   ; If the input was a vector, loop over elements in the simplest way
-  for i=0,n_elements(v2)-1 do begin
+  for i=0L,n_elements(v2)-1 do begin
     ; Compute the vector describing the input location
     invector=[cos(v2[i]/3600.d*!DPI/180.d)*cos(v3[i]/3600.d*!DPI/180.d),sin(v2[i]/3600.d*!DPI/180.d)*cos(v3[i]/3600.d*!DPI/180.d),sin(v3[i]/3600.d*!DPI/180.d)]
 
