@@ -63,7 +63,7 @@ for k=0,thisdim_out[2]-1 do begin
     print,'Constructing cube: '+strcompress(string(round(k*100./thisdim_out[2])),/remove_all)+'% complete'
 
   ; First pass cut: trim to only stuff within rlim of this z location
-  indexk=where(abs(z-arr_zcoord[k]) le rlim[2],nindexk)
+  indexk=where(abs(z-arr_zcoord[k]-0.5) le rlim[2],nindexk)
 
   tempx=x[indexk]
   tempy=y[indexk]
@@ -125,12 +125,19 @@ oplot,circx,circy,color=250
         arr_radius[xmin:xmax]=sqrt(rx^2+replicate(ry^2,nbox))
 
         ; Determine points within the final circular ROI
-        tocalc=where(arr_radius le rlim[0],ncalc)
+;        tocalc=where(arr_radius le rlim[0],ncalc)
+
+      ; Square box ROI for consistency with Jane
+        temp17x=arr_radius
+        temp17y=arr_radius
+        temp17x[xmin:xmax]=abs(rx)
+        temp17y[xmin:xmax]=abs(replicate(ry,nbox))
+        tocalc=where((temp17x le rlim[0])and(temp17y le rlim[0]),ncalc)
 
         ; Squashed radii for weights
         srx=rx/xsquash
         sry=ry/ysquash
-        srz=(arr_zcoord[k]-tempz2[q])/zsquash
+        srz=(arr_zcoord[k]-tempz2[q]+0.5)/zsquash
 
 
         ; Combine normalized radii inside ROI
@@ -187,17 +194,17 @@ oplot,circx,circy,color=250
       thispix_detlam=temp2_detlam[thispix]
       thispix_dx=tempx2[thispix]-stopx
       thispix_dy=tempy2[thispix]-stopy
-      thispix_dz=tempz2[thispix]-slice
+      thispix_dz=tempz2[thispix]-slice-0.5
       thispix_enum=tempenum2[thispix]
       thispix_flux=tempf2[thispix]
       print,'HARDCODED 0.1 arcsec and 0.002 micron spaxels'
       print,'Distances are in arcsec and microns'
       print,'Debug location is: ',stopx,stopy,slice
       print,'Final value is: ',fcube[stopx,j,k]
-      print,'exp xdet ydet wave xdist ydist zdist rxy flux nweight'
+      print,'exp xdet ydet wave xdist ydist zdist rxy flux rweight nweight'
       for r=0,nthis-1 do begin
  ; NB- HARDCODING pixel size conversions to 0.1/0.1 arcsec and 0.002 micron
-        print,thispix_enum[r],fix(thispix_detx[r]),fix(thispix_dety[r]),thispix_detlam[r],thispix_dx[r]*0.1,thispix_dy[r]*0.1,thispix_dz[r]*0.002,sqrt(thispix_dx[r]^2+thispix_dy[r]^2)*0.1,thispix_flux[r],temp[thispix[r]]/matr_norm[stopx]
+        print,thispix_enum[r],fix(thispix_detx[r]),fix(thispix_dety[r]),thispix_detlam[r],thispix_dx[r]*0.1,thispix_dy[r]*0.1,thispix_dz[r]*0.002,sqrt(thispix_dx[r]^2+thispix_dy[r]^2)*0.1,thispix_flux[r],temp[thispix[r]],temp[thispix[r]]/matr_norm[stopx]
       endfor
       stop
     endif else begin

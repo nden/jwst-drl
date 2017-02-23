@@ -234,7 +234,6 @@ lamstop=lamstart+cube_zsize*ps_z
 cube_z=(master_lam-lamstart)/ps_z ; Z output cube location in pixels
 wavevec=findgen(cube_zsize)*ps_z+min(master_lam)
 
-;stop
 ; Cull single exposures
 ;index1=where(master_expnum eq 8)
 ;master_flux=master_flux[index1]
