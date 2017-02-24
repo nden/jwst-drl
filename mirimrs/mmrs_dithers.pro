@@ -42,17 +42,15 @@ endfor
 ndithers=n_elements(dithers)
 
 ; Construct the DRL well-sampled extended source pattern (4 pt)
-a=0.196; pixel size ch1/2
-b=0.244; pixel size ch3
-c=0.273; pixel size ch4
-psavg=(a+a+b+c)/4.; Average pizel size across 4 channels
+ps1a=0.196; pixel size ch1/2
+; (Ch 3 and 4 pixel size irrelevant b/c already small compared to PSF FWHM)
 sw1a=0.176; Slice width of 1A
 dithers=[dithers,dithers[0:3]]; Grow the vector
 ; Populate the vector
 for i=0,3 do begin
   dithers[ndithers+i].band='1A'
   dithers[ndithers+i].dpos=ndithers+i+1
-  dithers[ndithers+i].alpha1a=psavg/4.*((-1)^(i+1))*((-1)^(floor(i/2)))
+  dithers[ndithers+i].alpha1a=ps1a/4.*((-1)^(i+1))*((-1)^(floor(i/2)))
   dithers[ndithers+i].beta1a=sw1a*5.5/2.*((-1)^i)
 endfor
 ndithers=n_elements(dithers)
