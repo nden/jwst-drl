@@ -18,6 +18,9 @@
 ;   Can be stopped at a particular x,y,z location in the cube for
 ;   debugging purposes by specifying slice, stopx, and stopy
 ;
+;   Note that the actual heavy lifting code is mmrs_cube.pro;
+;   miri_cube is really the calling script.
+;
 ; CALLING SEQUENCE:
 ;   miri_cube
 ;
@@ -147,7 +150,7 @@ for i=0,nfiles-1 do begin
   rollref[i]=sxpar(hdr,'ROLL_REF')
 
   if ((v2ref[i] eq 0.)and(v3ref[i] eq 0.)and(raref[i] eq 0.)) then begin
-    print,'Not finding WCS keywords; are they present?'
+    print,'Cannot find WCS keywords; are they present?'
   endif
 endfor
 
@@ -276,6 +279,13 @@ for i=0,nfiles-1 do begin
     thisimg=raw
     thisdq=dq
   endelse
+  
+  ; If dimensionality is not 2, something went wrong
+  ndim=(size(thisimg))[0]
+  if (ndim ne 2) then begin
+    print,'Error: wrong input file dimensions, is this ramp data?'
+    return
+  endif
 
   bzero=long64(fxpar(hdr2,'BZERO'))
 

@@ -71,6 +71,8 @@ V3REF = -5.3123744d*60. ; In arcsec
 outfiles=outdir+fileandpath(files)
 for i=0,nfiles-1 do begin
   spawn, 'cp '+files[i]+' '+outfiles[i]
+  ; Ensure new files are not gzipped
+  spawn, 'gunzip '+outfiles[i]
 endfor
 
 ; Loop over files
