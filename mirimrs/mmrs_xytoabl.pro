@@ -9,8 +9,8 @@
 ;   mmrs_xytoabl,x,y,a,b,l,channel,[slicenum=,slicename=,refdir=]
 ;
 ; INPUTS:
-;   x      - X coordinate in 0-indexed pixels
-;   y      - Y coordinate in 0-indexed pixels
+;   x      - X coordinate in 1-indexed pixels
+;   y      - Y coordinate in 1-indexed pixels
 ;   channel - channel name (e.g, '1A')
 ;
 ; OPTIONAL INPUTS:

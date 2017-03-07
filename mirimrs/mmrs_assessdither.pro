@@ -99,7 +99,7 @@ for i=0,ndith-1 do begin
   mmrs_v2v3toab,v2all,v3all,aall,ball,channel
   a=reform(aall,[nra,ndec])
   b=reform(ball,[nra,ndec])
-  ; Transform to pixel locations
+  ; Transform to 1-indexed pixel locations
   mmrs_abltoxy,aall,ball,lam,xall,yall,channel,phase=phase
   x=reform(xall,[nra,ndec])
   y=reform(yall,[nra,ndec])

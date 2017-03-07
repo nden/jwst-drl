@@ -20,8 +20,8 @@
 
 ;
 ; OUTPUT:
-;   x      - X coordinate in 0-indexed pixels
-;   y      - Y coordinate in 0-indexed pixels
+;   x      - X coordinate in 1-indexed pixels
+;   y      - Y coordinate in 1-indexed pixels
 ;
 ; OPTIONAL OUTPUT:
 ;   slicenum - Slice number (e.g., 11)
