@@ -1,9 +1,9 @@
 ;+
 ; NAME:
-;   mmrs_cv3_preprocess
+;   mmrs_cv_preprocess
 ;
 ; PURPOSE:
-;   Add WCS keywords to CV3 ground test data.  Note that while early
+;   Add WCS keywords to CV ground test data.  Note that while early
 ;   versions of this code originally changed the FORMAT of the data too,
 ;   applying a very simple minded ramps-to-slopes module.  It no
 ;   longer does so.
@@ -12,10 +12,10 @@
 ;   Jane's code to do the same thing has already been run.
 ;
 ; CALLING SEQUENCE:
-;   mmrs_cv3_preprocess,directory
+;   mmrs_cv_preprocess
 ;
 ; INPUTS:
-;   directory - cv3 input directory
+;   directory - cv input directory
 ;
 ; OPTIONAL INPUTS:
 ;
@@ -26,6 +26,7 @@
 ; OPTIONAL OUTPUT:
 ;
 ; COMMENTS:
+;   Works with CV2 and CV3 data.  Used to be CV3-specific.
 ;
 ; EXAMPLES:
 ;
@@ -41,7 +42,7 @@
 ;-
 ;------------------------------------------------------------------------------
 
-pro mmrs_cv3_preprocess,directory,outdir=outdir
+pro mmrs_cv_preprocess,directory,outdir=outdir
 
 ; Select input files to process
 files = dialog_pickfile( title='Read Files to Process', $
@@ -50,12 +51,6 @@ files = dialog_pickfile( title='Read Files to Process', $
                                      /MUST_EXIST        , $
                                      /MULTIPLE_FILES)
 nfiles=n_elements(files)
-
-; Select reference file for astrometry zeropoint
-zpfile = dialog_pickfile( title='Reference File', $
-                                     filter='*.fits', $
-                                     get_path=zprootdir, $
-                                     /MUST_EXIST)
 
 ; Default output directory
 if (~keyword_set(outdir)) then outdir=concat_dir(rootdir,'preproc/')
@@ -78,30 +73,9 @@ for i=0,nfiles-1 do begin
   spawn, 'cp '+files[i]+' '+outfiles[i]
 endfor
 
-stop
-
-
-
-
-
-; Read in and write out files
+; Loop over files
 for i=0,nfiles-1 do begin
-  outfile=concat_dir(outdir,fileandpath(files[i]))
-
-  image=readfits(files[i],hdr)
-  imageb=readfits(bfiles[i],hdrb)
-
-  ; Subtract backround and zero bad pixels
-  imtemp=image[*,*,0]-imageb[*,*,0]
-  sigtemp=image[*,*,1]
-  mask=image[*,*,2]
-  index=where(mask ne 0,nindex)
-  if (nindex ne 0) then begin
-    imtemp[index]=0.
-    sigtemp[index]=0.
-  endif
-  image[*,*,0]=imtemp
-  image[*,*,1]=sigtemp
+  hdr=headfits(files[i])
 
   ; Derive the offsets from the XACTPOS, YACTPOS in the headers
   osim_xact=fxpar(hdr,'XACTPOS')
@@ -127,10 +101,8 @@ for i=0,nfiles-1 do begin
   fxaddpar,hdr,'RA_REF',RAREF
   fxaddpar,hdr,'DEC_REF',DECREF
 
-  print,RAREF,DECREF,v2,v3
-
-  ; Write out file
-  writefits,outfile,image,hdr
+  ; Modify 0th extension headers
+  modfits,outfiles[i],0,hdr,exten_no=0
 endfor
 
 

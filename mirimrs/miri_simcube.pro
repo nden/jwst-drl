@@ -7,6 +7,7 @@
 
 pro miri_simcube,directory,band,imonly=imonly,rampdata=rampdata,slice=slice,stopx=stopx,stopy=stopy
 
+channel=fix(strmid(band,0,1))
 subband=strupcase(strmid(band,1,1));A,B, or C
 if (subband eq 'A') then subband_name='SHORT'
 if (subband eq 'B') then subband_name='MEDIUM'
@@ -146,7 +147,6 @@ basey=basey[index0]
 basebeta=basebeta[index0]
 basealpha=basealpha[index0]
 baselambda=baselambda[index0]
-
 npix=n_elements(index0)
 
 ; Convert all alpha,beta base locations to v2,v3 base locations

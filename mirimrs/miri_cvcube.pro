@@ -1,12 +1,78 @@
-; Oct 2016: Changed sign on RA WCS, was wrong
-; Dec 2016: Update for cube testing with Jane
-pro miri_cv3cube,imonly=imonly,rampdata=rampdata,slice=slice,stopx=stopx,stopy=stopy
+;+
+; NAME:
+;   miri_cvcube
+;
+; PURPOSE:
+;   Builds a data cube from CV ground test data.  Assumes that WCS
+;   keywords have already been added to the data, either using
+;   mmrs_cv_preprocess.pro or Jane's equivalent routine.
+;
+;   Can either run on Lvl2b slope data that has been processed by the JWST
+;   pipeline or ramp-level data, in which case it will adopt a very
+;   rough and hacky approach to ramp fitting.  Run in this mode by
+;   specifying /rampdata
+;
+;   Can be run to only produce a single image slice using /imonly
+;   keyword.
+;
+;   Can be stopped at a particular x,y,z location in the cube for
+;   debugging purposes by specifying slice, stopx, and stopy
+;
+; CALLING SEQUENCE:
+;   miri_cvcube
+;
+; INPUTS:
+;
+; OPTIONAL INPUTS:
+;
+; OUTPUT:
+;   Data cubes and slices thereof
+;
+; OPTIONAL OUTPUT:
+;
+; COMMENTS:
+;   Works with CV2 and CV3 data.  Used to be CV3-specific.
+;
+; EXAMPLES:
+;
+; BUGS:
+;
+; PROCEDURES CALLED:
+;
+; INTERNAL SUPPORT ROUTINES:
+;
+; REVISION HISTORY:
+;   Early 2016    Written by David Law (dlaw@stsci.edu)
+;   Oct 2016:     Changed sign on RA WCS, was wrong
+;   Dec 2016:     Update for cube testing with Jane
+;   07-Mar-2017   Ported to cvcube from cv3cube.  Update to 1-index
+;                 distortion mapping.
+;   
+;-
+;------------------------------------------------------------------------------
+
+pro miri_cvcube,band,imonly=imonly,rampdata=rampdata,slice=slice,stopx=stopx,stopy=stopy
 
 ; Log runtime
 stime0 = systime(1)
 ; Memory tracking
 thismem = memory()
 maxmem = 0
+
+channel=fix(strmid(band,0,1))
+if (channel eq 1) then det_name='MIRIFUSHORT'
+if (channel eq 2) then det_name='MIRIFUSHORT'
+if (channel eq 3) then det_name='MIRIFULONG'
+if (channel eq 4) then det_name='MIRIFULONG'
+subband=strupcase(strmid(band,1,1));A,B, or C
+if (subband eq 'A') then subband_name='SHORT'
+if (subband eq 'B') then subband_name='MEDIUM'
+if (subband eq 'C') then subband_name='LONG'
+
+if ((subband ne 'A')and(subband ne 'B')and(subband ne 'C')) then begin
+  print,'Subband not known!'
+  exit
+endif
 
 ; Output cube parameters
 ps_x=0.1; arcsec
@@ -18,11 +84,53 @@ outcube=concat_dir(outdir,'cube.fits')
 outslice=concat_dir(outdir,'slice.fits')
 outcollapse=concat_dir(outdir,'collapse.fits')
 
+files = dialog_pickfile( title='Read Files to Process', $
+                                     filter='*.fits', $
+                                     get_path=new_path, $
+                                     /MUST_EXIST        , $
+                                     /MULTIPLE_FILES)
+nfiles=n_elements(files)
+
+; Trim the input file list to ensure that we're only using the
+; appropriate band/channel
+keep=intarr(nfiles)
+for i=0,nfiles-1 do begin
+  hdr=headfits(files[i])
+
+  band=fxpar(hdr,'DGAA_POS'); Assume no crossed-setups.  SHORT,MEDIUM,LONG
+  det=fxpar(hdr,'DETECTOR'); MIRIFUSHORT or MIRIFULONG
+
+  if ((band eq '1A'
+endfor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ; If /rampdata is set, assume that the input files are ramps
 ; otherwise assume they have been reduced by JWST pipeline through the
 ; end of CALSPEC2
 if (keyword_set(rampdata)) then begin
   ; This hasn't been tested lately
+
+
+
+
+
+
 endif else begin
 ; This case assumes already pipeline processed to calibrated slopes
   files = dialog_pickfile( title='Read Files to Process', $
@@ -61,12 +169,12 @@ xmin=0; Minimum x pixel for ch1
 xmax=511; Maximum x pixel for ch1
 nx=xmax-xmin+1
 
-; Define base x and y pixel number
+; Define 0-indexed base x and y pixel number
 basex=rebin(findgen(nx)+xmin,[nx,ny])
 basey=transpose(rebin(findgen(ny),[ny,nx]))
 
-; Convert to base alpha,beta,lambda
-mmrs_xytoabl,basex,basey,basealpha,basebeta,baselambda,'1A',slicenum=slicenum
+; Convert to base alpha,beta,lambda using 1-indexed values
+mmrs_xytoabl,basex+1,basey+1,basealpha,basebeta,baselambda,'1A',slicenum=slicenum
 
 ; Crop to only pixels on a real slice
 index0=where(slicenum gt 0,nindex0)
@@ -89,8 +197,8 @@ master_lam=fltarr(nindex0*nfiles)
 master_expnum=intarr(nindex0*nfiles)
 master_dq=replicate(long64(0),nindex0*nfiles)
 ; Extra vectors for debugging
-master_detx=fltarr(nindex0*nfiles)
-master_dety=fltarr(nindex0*nfiles)
+master_detx=fltarr(nindex0*nfiles); 0-indexed
+master_dety=fltarr(nindex0*nfiles); 0-indexed
 master_v2=dblarr(nindex0*nfiles)
 master_v3=dblarr(nindex0*nfiles)
 
