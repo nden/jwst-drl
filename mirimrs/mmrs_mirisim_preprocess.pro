@@ -68,24 +68,32 @@ end
 
 ;------------------------------------------------------------------------------
 
-pro mmrs_mirisim_preprocess,directory,oldwcs=oldwcs
+pro mmrs_mirisim_preprocess,oldwcs=oldwcs
 
-; directory is a local directory path, inside which it will look
-; for det_images/*.fits and convert each of those files
-indir=concat_dir(directory,'det_images/')
-outdir=ml_strreplace(indir,'det_images','preproc')
+; Select input files to process
+files = dialog_pickfile( title='Read Files to Process', $
+                                     filter='*.fits', $
+                                     get_path=rootdir, $
+                                     /MUST_EXIST        , $
+                                     /MULTIPLE_FILES)
+nfiles=n_elements(files)
+
+; Default output directory
+if (~keyword_set(outdir)) then outdir=concat_dir(rootdir,'preproc/')
+; Ensure output directory exists
 if file_test(outdir,/directory) eq 0 then spawn, '\mkdir -p '+outdir
 
-infiles=file_search(indir,'*.fits')
-nfiles=n_elements(infiles)
-outfiles=infiles
+; Copy files to output directory
+outfiles=outdir+fileandpath(files)
 for i=0,nfiles-1 do begin
-  outfiles[i]=ml_strreplace(outfiles[i],'det_images','preproc')
-  spawn, 'cp '+infiles[i]+' '+outfiles[i]
+  spawn, 'cp '+files[i]+' '+outfiles[i]
+  ; Ensure new files are not gzipped
+  spawn, 'gunzip '+outfiles[i]
 endfor
 
+
 ; Look in the first file to see if we have header keywords
-hdr=headfits(infiles[0])
+hdr=headfits(files[0])
 temp=sxpar(hdr,'V3_REF',count=count)
 ; If not, read in reference dither table
 if (count eq 0) then begin
@@ -122,7 +130,7 @@ endif
 
 ; Loop over files
 for i=0,nfiles-1 do begin
-  hdr=headfits(infiles[i])
+  hdr=headfits(files[i])
 
   ; Do the headers contain the WCS keywords?
   temp=sxpar(hdr,'V3_REF',count=count)

@@ -332,7 +332,7 @@ loadct,39
 
 ; Set up plot
 plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
-oplot,siaf1a[0].v2_ref-dithers[36:39].dxidl,siaf1a[0].v3_ref+dithers[36:39].dyidl,psym=1,thick=4
+oplot,siaf1a[0].v2_ref-dithers[36:39].dxidl,siaf1a[0].v3_ref+dithers[36:39].dyidl,psym=1,thick=4,color=60
 oplot,box1A_v2-dithers[36].dxidl,box1A_v3+dithers[36].dyidl,color=60,thick=4
 oplot,box1A_v2-dithers[37].dxidl,box1A_v3+dithers[37].dyidl,color=60,thick=4
 oplot,box4A_v2-dithers[36].dxidl,box4A_v3+dithers[36].dyidl,color=250,thick=4

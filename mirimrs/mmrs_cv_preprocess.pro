@@ -42,7 +42,7 @@
 ;-
 ;------------------------------------------------------------------------------
 
-pro mmrs_cv_preprocess,directory,outdir=outdir
+pro mmrs_cv_preprocess,outdir=outdir
 
 ; Select input files to process
 files = dialog_pickfile( title='Read Files to Process', $
