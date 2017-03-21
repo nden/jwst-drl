@@ -25,9 +25,10 @@
 ;   yan    - JWST yan coordinate in arcsec
 ;
 ; COMMENTS:
-;   Works with CDP6 delivery files.  Inverse function is mirim_v2v3toxy
+;   Works with CDP7b delivery files.  Inverse function is mirim_v2v3toxy
 ;   Based on the IDL example code provided by Alistair Glasse in
-;   CDP-6.
+;   CDP-7b.  CDP7b newly defined origin such that (0,0) is the middle
+;   of the lower-left light sensitive pixel.
 ;
 ;   Note that both input and output can be vectors of numbers.
 ;
@@ -42,6 +43,7 @@
 ; REVISION HISTORY:
 ;   08-Sep-2016  Written by David Law (dlaw@stsci.edu)
 ;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
+;   20-Mar-2017  Update to CDP-7b
 ;-
 ;------------------------------------------------------------------------------
 
@@ -49,9 +51,9 @@
 pro mirim_xytov2v3,xpixel,ypixel,v2,v3,filter,refdir=refdir,xan=xan,yan=yan
 
 if (~keyword_set(refdir)) then $
-  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirim/distfiles/cdp6/')
+  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirim/distfiles/cdp7b/')
 
-reffile='MIRI_FM_MIRIMAGE_DISTORTION_06.03.00.fits'
+reffile='MIRI_FM_MIRIMAGE_DISTORTION_7B.03.00.fits'
 reffile=concat_dir(refdir,reffile)
 ; Read global header
 hdr=headfits(reffile)
@@ -76,7 +78,7 @@ endif
 UnitVec=fltarr(npoints)+1.0
 
 ; What is the boresight index in the table?
-indx=where(boresight.filter eq filter)
+indx=where(strtrim(boresight.filter,2) eq strtrim(filter,2))
 if (indx eq -1) then begin
   splog,'Bad boresight filter!'
   return
@@ -93,7 +95,7 @@ DFP = MI ## SCA
 DFP_X = DFP[*,0]
 DFP_Y = DFP[*,1]
 
-; Transform to Entract Focal Plane coordinates
+; Transform to Entrance Focal Plane coordinates
 Xout = [[UnitVec],[DFP_X],[DFP_X^2],[DFP_X^3],[DFP_X^4]]
 Yout = [[UnitVec],[DFP_Y],[DFP_Y^2],[DFP_Y^3],[DFP_Y^4]]
 Xin=fltarr(npoints)
