@@ -163,10 +163,10 @@ if ((band eq '1A')or(band eq '1B')or(band eq '1C')) then begin
   xmax=509; Maximum x pixel
 
   ; Output cube parameters
-  rlim_arcsec=0.15; in arcseconds
+  rlim_arcsec=0.1; in arcseconds
   rlimz_mic=0.004;
-  ps_x=0.1; arcsec
-  ps_y=0.1; arcsec
+  ps_x=0.17; arcsec
+  ps_y=0.17; arcsec
   ps_z=0.002; micron
 endif
 if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
@@ -252,13 +252,18 @@ master_v3=dblarr(nindex0*nfiles)
 ; Loop over input files reading them into master vectors
 for i=0,nfiles-1 do begin
   hdr=headfits(files[i])
+
   if ((type eq 'cv')and(~keyword_set(cvint))) then begin
     raw=mrdfits(files[i],'SCI',hdr1)
     dq=mrdfits(files[i],'DQ',hdr2)
+    bzero=long64(fxpar(hdr2,'BZERO'))
+    dq=dq+bzero
   endif
   if (type eq 'mirisim') then begin
     raw=mrdfits(files[i],'SCI',hdr1)
     dq=mrdfits(files[i],'PIXELDQ',hdr2)
+    bzero=long64(fxpar(hdr2,'BZERO'))
+    dq=dq+bzero
   endif
 
   ; If these were ramps data, super-crude slopes conversion
@@ -269,8 +274,9 @@ for i=0,nfiles-1 do begin
     lf=raw[*,*,ndim[2]-1,*]-raw[*,*,0,*]
     ; Median across each integration to reject cosmics
     thisimg=median(lf,dimension=4)
-    ; Forget about being able to do anything useful with dq
-    thisdq=replicate(0.,size(thisimg,/dim))
+    ;writefits,'thisimg.fits',thisimg
+    ; Grow dq mask
+    thisdq=ml_growmask(dq,2)
   endif else if (keyword_set(cvint)) then begin
     thisimg=(mrdfits(files[i],0,hdr1))[*,*,0]
     thisdq=replicate(0.,size(thisimg,/dim))
@@ -287,11 +293,9 @@ for i=0,nfiles-1 do begin
     return
   endif
 
-  bzero=long64(fxpar(hdr2,'BZERO'))
-
   ; Crop to correct 1/2 of detector
   thisflux=thisimg[xmin:xmax,*]
-  thisdq=thisdq[xmin:xmax,*]+bzero
+  thisdq=thisdq[xmin:xmax,*]
   ; Crop to only pixels on real slices
   thisflux=thisflux[index0]
   thisdq=thisdq[index0]
