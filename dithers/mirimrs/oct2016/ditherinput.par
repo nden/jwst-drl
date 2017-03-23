@@ -1,0 +1,52 @@
+# Constructed by copy-pasting Alistair's Oct 20 2016 tables
+# into this format and appending DRLs EXTENDED tables
+# Note that these are all alpha,beta in Ch1A ref frame
+# (both transform and zero-point location)
+
+typedef struct {
+ int dpos;
+ char band[2];
+ float alpha1A;
+ float beta1A;
+} DITHER;
+
+DITHER	1	1A	-1.078       0.528
+DITHER	2	1A	0.980      -0.440
+DITHER	3	1A	1.078      -0.528
+DITHER	4	1A	-0.980       0.440
+DITHER	5	1A	1.078       0.528
+DITHER	6	1A	-0.980      -0.440
+DITHER	7	1A	-1.078      -0.528
+DITHER	8	1A	0.980       0.440
+DITHER	9	2A	-1.078       1.584
+DITHER	10	2A	0.980      -1.320
+DITHER	11	2A	1.078      -1.459
+DITHER	12	2A	-0.980       1.446
+DITHER	13	2A	1.078       1.584
+DITHER	14	2A	-0.980      -1.320
+DITHER	15	2A	-1.078      -1.459
+DITHER	16	2A	0.980       1.446
+DITHER	17	3A	-2.450       2.218
+DITHER	18	3A	1.576      -0.686
+DITHER	19	3A	1.698      -0.880
+DITHER	20	3A	-2.328       2.024
+DITHER	21	3A	1.698       2.218
+DITHER	22	3A	-2.328      -0.686
+DITHER	23	3A	-2.450      -0.880
+DITHER	24	3A	1.576       2.024
+DITHER	25	4A	-1.960       3.168
+DITHER	26	4A	2.817      -1.672
+DITHER	27	4A	2.954      -1.994
+DITHER	28	4A	-1.824       2.845
+DITHER	29	4A	2.954       3.168
+DITHER	30	4A	-1.824      -1.672
+DITHER	31	4A	-1.960      -1.994
+DITHER	32	4A	2.817       2.845
+DITHER	33	1A	-0.049	+0.484
+DITHER	34	1A	+0.049	-0.484
+DITHER	35	1A	+0.088	+0.396
+DITHER	36	1A	+0.186	-0.572
+DITHER	37	1A	+0.049	+0.484
+DITHER	38	1A	-0.049	-0.484
+DITHER	39	1A	-0.088	+0.396
+DITHER	40	1A	-0.186	-0.572

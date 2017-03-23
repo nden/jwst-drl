@@ -1,4 +1,4 @@
-function mirinoise,ngroupin,nintin
+function mirim_noise,ngroupin,nintin
 
 signalrate=1*15./17.*1.05; e-/s ; dial this to match what my baseline should be for a given test
 ngroup=float(ngroupin)
