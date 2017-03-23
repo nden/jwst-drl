@@ -50,7 +50,7 @@
 pro mmrs_xytoabl,x,y,a,b,l,channel,slicenum=slicenum,slicename=slicename,refdir=refdir,trim=trim
 
 if (~keyword_set(refdir)) then $
-  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirimrs/distfiles/cdp6/')
+  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'cdp/cdp6/')
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then

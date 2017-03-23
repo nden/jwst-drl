@@ -43,7 +43,7 @@
 pro mmrs_v2v3toab,v2,v3,a,b,channel,refdir=refdir
 
 if (~keyword_set(refdir)) then $
-  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirimrs/distfiles/cdp6/')
+  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'cdp/cdp6/')
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then

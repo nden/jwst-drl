@@ -44,7 +44,7 @@
 pro mmrs_siaf,channel,rootdir=rootdir,parfile=parfile
 
 if (~keyword_set(rootdir)) then $
-  rootdir='~/jwst/trunk/mirimrs/distfiles/cdp6/'
+  rootdir='~/jwst/trunk/cdp/cdp6/'
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then

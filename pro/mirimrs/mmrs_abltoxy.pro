@@ -51,7 +51,7 @@
 pro mmrs_abltoxy,a,b,l,x,y,channel,slicenum=slicenum,slicename=slicename,refdir=refdir,trim=trim,phase=phase
 
 if (~keyword_set(refdir)) then $
-  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'mirimrs/distfiles/cdp6/')
+  refdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'cdp/cdp6/')
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then
