@@ -18,8 +18,8 @@
 ;   /xan   - Specifies that input coordinates are actually xan,yan frame
 ;
 ; OUTPUT:
-;   x       - SCA pixel x coordinate (? indexed)
-;   y       - SCA pixel y coordinate (? index)
+;   x       - SCA pixel x coordinate (0 is middle of lower left sci pixel)
+;   y       - SCA pixel y coordinate (0 is middle of lower left sci pixel)
 ;
 ; OPTIONAL OUTPUT:
 ;
@@ -73,26 +73,26 @@ if (n_elements(v3) ne npoints) then begin
   splog,'Input v2,v3 array size mismatch!'
   return
 endif
-UnitVec=fltarr(npoints)+1.0
+UnitVec=dblarr(npoints)+1.d
 
 ; Set up JWST V2,V3 arrays in units of arcmin
-JWST=fltarr(npoints,3)
+JWST=dblarr(npoints,3)
 ; If inputs were really in XAN, YAN:
 if (keyword_set(xan)) then begin
-  JWST[*,0]=v2/60.
-  JWST[*,1]=-v3/60.-7.8
+  JWST[*,0]=v2/60.d
+  JWST[*,1]=-(v3/60.d)-7.8d
   JWST[*,2]=UnitVec
 ; Otherwise inputs really were v2,v3
 endif else begin
-  JWST[*,0]=v2/60.
-  JWST[*,1]=v3/60.
+  JWST[*,0]=v2/60.d
+  JWST[*,1]=v3/60.d
   JWST[*,2]=UnitVec
 endelse
 
 ; Convert to XAN, YAN
-JWST_XYAN=fltarr(npoints,3)
+JWST_XYAN=dblarr(npoints,3)
 JWST_XYAN[*,0] = JWST[*,0]
-JWST_XYAN[*,1] = -JWST[*,1]-7.8
+JWST_XYAN[*,1] = -JWST[*,1]-7.8d
 JWST_XYAN[*,2] = JWST[*,2]
 
 ; Compute MIRI Entrance Focal Plane coordinates
@@ -104,8 +104,8 @@ EFP_Y=EFP[*,1]
 ; Transform from EFP to MIRI Detector Focal Plane
 Xin = [[UnitVec], [EFP_X], [EFP_X^2], [EFP_X^3], [EFP_X^4]]
 Yin = [[UnitVec], [EFP_Y], [EFP_Y^2], [EFP_Y^3], [EFP_Y^4]]
-Xout=fltarr(npoints)
-Yout=fltarr(npoints)
+Xout=dblarr(npoints)
+Yout=dblarr(npoints)
 for i=0,npoints-1 do begin
   Xout[i]=transpose(Yin[i,*]) ## A ## Xin[i,*]
   Yout[i]=transpose(Yin[i,*]) ## B ## Xin[i,*]

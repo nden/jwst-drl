@@ -2,14 +2,21 @@
 # Originally written by Nadia Dencheva, tweaked by David Law
 """
 Code to create CRDS reference files for the distortion of the
-MIRI Imager using IDT reference files delivered with CDP-6:
+MIRI Imager using IDT reference files delivered with CDP-7beta:
 
-MIRI_FM_MIRIMAGE_DISTORTION_06.03.00.fits
+MIRI_FM_MIRIMAGE_DISTORTION_7B.03.00.fits
 
 MIRI Imager uses 2 reference files of type:
 
 DISTORTION
 FILTEROFFSET
+
+In this version the CDP file goes from 0-indexed science pixels
+(0,0) in the middle of the lower left science pixel to XAN,YAN
+
+We will need to add additional transforms so that the mapping goes
+from 0-indexed detector pixels (0,0) in the middle of the lower left
+reference pixel to V2,V3
 
 make_references() creates all reference files.
 """
@@ -18,12 +25,43 @@ from __future__ import absolute_import, division, unicode_literals, print_functi
 
 
 import numpy as np
+import pdb as pdb
 from numpy.testing import assert_allclose
 from astropy.io import fits
 from astropy.modeling import models
 from asdf import AsdfFile
+from jwst import datamodels
+from jwst.assign_wcs import miri
 
+import mirim_tools as mirim_tools
 
+# Print full arrays for debugging
+np.set_printoptions(threshold=np.inf)
+
+# Swap i,j order of the coefficient in this version
+def polynomial_from_coeffs_matrix_swap(coefficients, name=None):
+    n_dim = coefficients.ndim
+
+    if n_dim == 1:
+        model = models.Polynomial1D(coefficients.size - 1, name=name)
+        model.parameters = coefficients
+    elif n_dim == 2:
+        shape = coefficients.shape
+        degree = shape[0] - 1
+        if shape[0] != shape[1]:
+            raise TypeError("Coefficients must be an (n+1, n+1) matrix")
+
+        coeffs = {}
+        for i in range(shape[0]):
+            for j in range(shape[0]):
+                if i + j < degree + 1:
+                    cname = 'c' + str(i) + '_' +str(j)
+                    coeffs[cname] = coefficients[j, i]#DRL: I had to swap i,j order here
+        model = models.Polynomial2D(degree, name=name, **coeffs)
+
+    return model
+
+# Keep i,j order of the coefficient in this version
 def polynomial_from_coeffs_matrix(coefficients, name=None):
     n_dim = coefficients.ndim
 
@@ -43,8 +81,8 @@ def polynomial_from_coeffs_matrix(coefficients, name=None):
                     cname = 'c' + str(i) + '_' +str(j)
                     coeffs[cname] = coefficients[i, j]
         model = models.Polynomial2D(degree, name=name, **coeffs)
-    return model
 
+    return model
 
 def make_filter_offset(distfile, outname):
     """
@@ -68,7 +106,7 @@ def make_filter_offset(distfile, outname):
 
     Examples
     -------
-    >>> make_filter_offset('MIRI_FM_MIRIMAGE_DISTORTION_06.03.00.fits',
+    >>> make_filter_offset('MIRI_FM_MIRIMAGE_DISTORTION_7B.03.00.fits',
                                         'jwst_miri_filter_offset_0001.asdf')
     """
 
@@ -78,7 +116,7 @@ def make_filter_offset(distfile, outname):
     d = dict.fromkeys(data.field('FILTER'))
     for i in data:
         d[i[0]] = {'column_offset': -i[1], 'row_offset': -i[2]}
-    tree = {"title": "MIRI imager filter offset - CDP6",
+    tree = {"title": "MIRI imager filter offset - CDP7B",
             "reftype": "FILTEROFFSET",
             "instrument": "MIRI",
             "detector": "MIRIMAGE",
@@ -121,31 +159,40 @@ def make_distortion(distfile, outname):
 
     Examples
     --------
-    >>> make_distortion("MIRI_FM_MIRIMAGE_DISTORTION_06.03.00.fits", 'test.asdf')
+    >>> make_distortion("MIRI_FM_MIRIMAGE_DISTORTION_7B.03.00.fits", 'test.asdf')
     """
+    # Transform from 0-indexed Detector frame (used by pipeline) to 0-indexed Science frame (used by CDP)
+    det_to_sci = models.Shift(-4) & models.Identity(1)
+
     fdist = fits.open(distfile)
-    mi_matrix = fdist[8].data
+    mi_matrix = fdist['MI matrix'].data
     mi_col = models.Polynomial1D(1, c0=mi_matrix[0, 2], c1=mi_matrix[0,0], name="M_column_correction")
     mi_row = models.Polynomial1D(1, c0=mi_matrix[1, 2], c1=mi_matrix[1,1], name="M_row_correction")
-    m_matrix = fdist[4].data
+    m_matrix = fdist['M matrix'].data
     m_col = models.Polynomial1D(1, c0=m_matrix[0, 2], c1=m_matrix[0,0])
     m_row = models.Polynomial1D(1, c0=m_matrix[1, 2], c1=m_matrix[1,1])
     mi_col.inverse = m_col
     mi_row.inverse = m_row
-    m_transform = mi_col & mi_row #mi_row & mi_col
+    m_transform = mi_col & mi_row
+    m_transform.inverse = m_col & m_row
 
-    ai_matrix = fdist[6].data
-    a_matrix = fdist[2].data
-    col_poly = polynomial_from_coeffs_matrix(ai_matrix, name="A_correction")
+    # This turns the output of the MI transform into the shape needed for the AI/BI transforms
+    mapping = models.Mapping([0, 1, 0, 1])
+    mapping.inverse = models.Identity(2)
+
+    ai_matrix = fdist['AI matrix'].data
+    a_matrix = fdist['A matrix'].data
+    col_poly = polynomial_from_coeffs_matrix_swap(ai_matrix, name="A_correction")
     col_poly.inverse = polynomial_from_coeffs_matrix(a_matrix)
-    bi_matrix = fdist[5].data
-    b_matrix = fdist[1].data
-    row_poly = polynomial_from_coeffs_matrix(bi_matrix, name="B_correction")
+    bi_matrix = fdist['BI matrix'].data
+    b_matrix = fdist['B matrix'].data
+    row_poly = polynomial_from_coeffs_matrix_swap(bi_matrix, name="B_correction")
     row_poly.inverse = polynomial_from_coeffs_matrix(b_matrix)
-    poly = col_poly & row_poly
+    poly = row_poly & col_poly # DRL: I had to switch the order here
+    poly.inverse = col_poly.inverse & row_poly.inverse # but not switch here
 
-    ti_matrix = fdist[7].data
-    t_matrix = fdist[3].data
+    ti_matrix = fdist['TI matrix'].data
+    t_matrix = fdist['T matrix'].data
     ti_col = models.Polynomial2D(1, name='TI_column_correction')
     ti_col.parameters = ti_matrix[0][::-1]
     ti_row = models.Polynomial2D(1, name='TI_row_correction')
@@ -155,25 +202,29 @@ def make_distortion(distfile, outname):
     t_col.parameters = t_matrix[0][::-1]
     t_row = models.Polynomial2D(1, name='T_row_correction')
     t_row.parameters = t_matrix[1][::-1]
-    ti_col.inverse = t_col
-    ti_row.inverse = t_row
     t_transform = ti_row & ti_col
+    t_transform.inverse = t_row & t_col
 
-    mapping = models.Mapping([0, 1, 0, 1])
-    mapping.inverse = models.Identity(2)
 
     # ident is created here so that mapping can be assigned as inverse
     ident = models.Identity(2)
     ident.inverse = models.Mapping([0,1,0,1])
 
+    # This turns the output of the AI/BI transforms into the shape needed for the TI transform
     poly2t_mapping = models.Mapping([0, 1, 0, 1])
     poly2t_mapping.inverse = models.Mapping([0, 1, 0, 1])
 
-    distortion_transform = m_transform | mapping | poly | poly2t_mapping | t_transform | ident | models.Mapping([1,0])
+    # Transform from XAN,YAN in arcmin to V2,V3 in arcsec
+    xanyan_to_v2v3 = models.Identity(1) & (models.Scale(-1) | models.Shift(-7.8)) | models.Scale(60.) & models.Scale(60.)
+
+    distortion_transform = det_to_sci | m_transform | mapping | poly | poly2t_mapping | t_transform | ident | models.Mapping([1,0]) | xanyan_to_v2v3
+    distortion_transform.inverse=xanyan_to_v2v3.inverse | models.Mapping([1,0]).inverse | ident.inverse | t_transform.inverse | poly2t_mapping.inverse | poly.inverse | mapping.inverse | m_transform.inverse | det_to_sci.inverse
+
+    #pdb.set_trace()  
 
     fdist.close()
     f = AsdfFile()
-    tree = {"title": "MIRI imager distortion - CDP6",
+    tree = {"title": "MIRI imager distortion - CDP7B",
             "reftype": "DISTORTION",
             "instrument": "MIRI",
             "detector": "MIRIMAGE",
@@ -195,7 +246,7 @@ def make_references(filename, ref):
     ----------
     filename : str
         The name of the IDT file with the distortion.
-        In CDP6 the file is called "MIRI_FM_MIRIMAGE_DISTORTION_06.03.00.fits"
+        In CDP6 the file is called "MIRI_FM_MIRIMAGE_DISTORTION_7B.03.00.fits"
     ref : dict
         A dictionary {reftype: refname}, e.g.
         {'DISTORTION': 'jwst_miri_distortion_0001.asdf',
@@ -204,7 +255,7 @@ def make_references(filename, ref):
 
     Examples
     --------
-    >>> make_references('MIRI_FM_MIRIMAGE_DISTORTION_06.03.00.fits',
+    >>> make_references('MIRI_FM_MIRIMAGE_DISTORTION_7B.03.00.fits',
         {'DISTORTION': 'jwst_miri_distortion_0001.asdf',
         'FILTEROFFSET': 'jwst_miri_filter_offset_0001.asdf'})
 
@@ -220,28 +271,56 @@ def make_references(filename, ref):
         print("Filter offset file was not created.")
         raise
 
-# DRL- I haven't looked at this function really
-def test_transform(asdf_file):
+def test_transform(refs):
     """
     Parameters
     ----------
-    asdf_file: str
-        reference file with distortion
+    refs: refs = {"distortion": distfile, "filteroffset": offfile}
+        distfile="jwst_miri_imager_distortion_cdp7b.asdf"
+        offfile="jwst_miri_filteroffset_cdp7b.asdf"
 
-    xy, v2, v3 values are from technical report with CDP-6 delivery
+    xy, v2, v3 values are from technical report with CDP-7B delivery
+    First entry is the Imager reference point
     """
-    v2 = np.array([-8, -7.5, -7, -6.5, -8, -7.5, -7, -6.5, -8, -7.5, -7, -6.5], dtype=np.float)
-    v3 = np.array([-2, -2, -2, -2, -1.5, -1.5, -1.5, -1.5, -1, -1, -1, -1], dtype=np.float)
-    xy = np.array([[945.80, 728.45], [676.57, 748.63], [408.29, 768.69], [138.02, 789.09],
-                   [924.30, 456.59],[655.18, 477.89], [387.05, 498.99], [116.92, 519.96],
-                   [904.31, 185.02], [635.09, 207.37], [366.53, 229.45], [95.58, 250.95]],
+    xan = np.array([-7.5560561,-8, -7.5, -7, -6.5, -8, -7.5, -7, -6.5, -8, -7.5, -7, -6.5], dtype=np.float)
+    yan = np.array([-1.5655228,-2, -2, -2, -2, -1.5, -1.5, -1.5, -1.5, -1, -1, -1, -1], dtype=np.float)
+    v2,v3=mirim_tools.xanyan_to_v2v3(xan,yan)
+    # xy reference values in 0-indexed science frame for F770W
+    xy770w = np.array([[688.5,511.5],[946.30, 728.95], [677.07, 749.13], [408.79, 769.19], [138.52, 789.59],
+                   [924.80, 457.09],[655.68, 478.39], [387.55, 499.49], [117.42, 520.46],
+                   [904.81, 185.52], [635.59, 207.87], [367.03, 229.95], [96.08, 251.45]],
                   dtype=np.float)
+    # Convert to 0-indexed detector frame for F770W
+    xy770w = xy770w+[4,0]
 
-    f = AsdfFile.open(asdf_file)
-    transform = f.tree['model']
-    x, y = transform.inverse(v2, v3)
-    assert_allclose(x, xy[:,0], atol=.05)
-    assert_allclose(y, xy[:,1], atol=.05)
-    s1, s2 = transform (xy[:,0], xy[:,1])
+    # xy reference values in 0-indexed science frame for F1800W
+    xy1800w = np.array([[688.10606,512.22995],[945.91, 729.68], [676.68, 749.86], [408.40, 769.92], [138.13, 790.32],
+                        [924.41, 457.82],[655.29, 479.12], [387.16, 500.22], [117.03, 521.19],
+                        [904.42, 186.25], [635.20, 208.60], [366.64, 230.68], [95.69, 252.18]],
+                  dtype=np.float)
+    # Convert to 0-indexed detector frame for F1800W
+    xy1800w = xy1800w+[4,0]
+
+    input_model=datamodels.ImageModel()
+    input_model.meta.instrument.filter='F770W'
+    transform770w = miri.mirim_distortion_cdp7b(input_model, refs)
+    input_model.meta.instrument.filter='F1800W'
+    transform1800w = miri.mirim_distortion_cdp7b(input_model, refs)
+
+    # Test the inverse transform for F770w
+    x, y = transform770w.inverse(v2, v3)
+    assert_allclose(x, xy770w[:,0], atol=.05)
+    assert_allclose(y, xy770w[:,1], atol=.05)
+    # Test the forward transform for F770w
+    s1, s2 = transform770w (xy770w[:,0], xy770w[:,1])
+    assert_allclose(s1, v2, atol=0.05)
+    assert_allclose(s2, v3, atol=.05)
+
+    # Test the inverse transform for F1800w
+    x, y = transform1800w.inverse(v2, v3)
+    assert_allclose(x, xy1800w[:,0], atol=.05)
+    assert_allclose(y, xy1800w[:,1], atol=.05)
+    # Test the forward transform for F1800w
+    s1, s2 = transform1800w (xy1800w[:,0], xy1800w[:,1])
     assert_allclose(s1, v2, atol=0.05)
     assert_allclose(s2, v3, atol=.05)

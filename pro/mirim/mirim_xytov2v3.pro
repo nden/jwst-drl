@@ -9,8 +9,8 @@
 ;   mirim_xytov2v3,x,y,v2,v3,filter,[refdir=,xan=xan,yan=yan]
 ;
 ; INPUTS:
-;   x       - SCA pixel x coordinate (? indexed)
-;   y       - SCA pixel y coordinate (? index)
+;   x       - SCA pixel x coordinate (0 is middle of lower left sci pixel)
+;   y       - SCA pixel y coordinate (0 is middle of lower left sci pixel)
 ;   filter - Filter name (e.g., 'F770W')
 ;
 ; OPTIONAL INPUTS:
@@ -75,7 +75,7 @@ if (n_elements(ypixel) ne npoints) then begin
   splog,'Input xpixel,ypixel array size mismatch!'
   return
 endif
-UnitVec=fltarr(npoints)+1.0
+UnitVec=fltarr(npoints)+1.d
 
 ; What is the boresight index in the table?
 indx=where(strtrim(boresight.filter,2) eq strtrim(filter,2))
@@ -85,7 +85,7 @@ if (indx eq -1) then begin
 endif
 
 ; Transform to SCA pixel position without boresight offsets
-SCA = fltarr(npoints,3)
+SCA = dblarr(npoints,3)
 SCA[*,0]=xpixel-boresight[indx].COL_OFFSET
 SCA[*,1]=ypixel-boresight[indx].ROW_OFFSET
 SCA[*,2]=UnitVec
@@ -98,8 +98,8 @@ DFP_Y = DFP[*,1]
 ; Transform to Entrance Focal Plane coordinates
 Xout = [[UnitVec],[DFP_X],[DFP_X^2],[DFP_X^3],[DFP_X^4]]
 Yout = [[UnitVec],[DFP_Y],[DFP_Y^2],[DFP_Y^3],[DFP_Y^4]]
-Xin=fltarr(npoints)
-Yin=fltarr(npoints)
+Xin=dblarr(npoints)
+Yin=dblarr(npoints)
 for i=0,npoints-1 do begin
   Xin[i]=transpose(Yout[i,*]) ## AI ## Xout[i,*]
   Yin[i]=transpose(Yout[i,*]) ## BI ## Xout[i,*]
@@ -110,16 +110,16 @@ EFP=[[Xin],[Yin],[UnitVec]]
 JWST_XYAN = TI ## EFP
 
 ; Transform to V2,V3
-JWST=fltarr(npoints,3)
+JWST=dblarr(npoints,3)
 JWST[*,0] = JWST_XYAN[*,0]
-JWST[*,1] = -JWST_XYAN[*,1]-7.8
+JWST[*,1] = -JWST_XYAN[*,1]-7.8d
 JWST[*,2] = JWST_XYAN[*,2]
 
 ; Output vectors in units of arcsec
-v2=JWST[*,0]*60.
-v3=JWST[*,1]*60.
-xan=JWST_XYAN[*,0]*60.
-yan=JWST_XYAN[*,1]*60.
+v2=JWST[*,0]*60.d
+v3=JWST[*,1]*60.d
+xan=JWST_XYAN[*,0]*60.d
+yan=JWST_XYAN[*,1]*60.d
 
 return
 end
