@@ -171,8 +171,8 @@ def make_distortion(distfile, outname):
     m_matrix = fdist['M matrix'].data
     m_col = models.Polynomial1D(1, c0=m_matrix[0, 2], c1=m_matrix[0,0])
     m_row = models.Polynomial1D(1, c0=m_matrix[1, 2], c1=m_matrix[1,1])
-    mi_col.inverse = m_col
-    mi_row.inverse = m_row
+    mi_col.inverse = m_col.copy()
+    mi_row.inverse = m_row.copy()
     m_transform = mi_col & mi_row
     m_transform.inverse = m_col & m_row
 
@@ -214,12 +214,20 @@ def make_distortion(distfile, outname):
     poly2t_mapping = models.Mapping([0, 1, 0, 1])
     poly2t_mapping.inverse = models.Mapping([0, 1, 0, 1])
 
+    map_t2_xanyan = models.Mapping((1, 0))
+    map_t2_xanyan.inverse = models.Mapping((0, 1, 0, 1))
+
     # Transform from XAN,YAN in arcmin to V2,V3 in arcsec
     xanyan_to_v2v3 = models.Identity(1) & (models.Scale(-1) | models.Shift(-7.8)) | models.Scale(60.) & models.Scale(60.)
 
     distortion_transform = det_to_sci | m_transform | mapping | poly | poly2t_mapping | t_transform | ident | models.Mapping([1,0]) | xanyan_to_v2v3
-    distortion_transform.inverse=xanyan_to_v2v3.inverse | models.Mapping([1,0]).inverse | ident.inverse | t_transform.inverse | poly2t_mapping.inverse | poly.inverse | mapping.inverse | m_transform.inverse | det_to_sci.inverse
 
+    # Inverse transform created automatically, but if we needed to do it by hand
+    # it would look like this
+    #distortion_transform.inverse=xanyan_to_v2v3.inverse | models.Mapping([1,0]).inverse | ident.inverse | t_transform.inverse | poly2t_mapping.inverse | poly.inverse | mapping.inverse | m_transform.inverse | det_to_sci.inverse
+
+
+    #distortion_transform.bounding_box = [(4, 1028), (0, 1024)]
     #pdb.set_trace()  
 
     fdist.close()
