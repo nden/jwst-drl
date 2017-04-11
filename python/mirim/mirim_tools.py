@@ -22,7 +22,7 @@ def imager_detector_to_v2v3_cdp6(filter, refs):
     # This calls code at 
     # /Users/dlaw/anaconda2/envs/jwstb7rc2/lib/python2.7/site-packages/jwst-0.7.7.dev261-py2.7-macosx-10.7-x86_64.egg/jwst/assign_wcs/miri.py
     # Note that I've started modifying this code too
-    distortion = miri.mirim_distortion_cdp6(input_model, refs)
+    distortion = miri.imaging_distortion(input_model, refs)
     # Return the distortion object that can then be queried
     return distortion
 
@@ -42,7 +42,8 @@ def imager_detector_to_v2v3_cdp7b(filter, refs):
     # This calls code at 
     # /Users/dlaw/anaconda2/envs/jwstb7rc2/lib/python2.7/site-packages/jwst-0.7.7.dev261-py2.7-macosx-10.7-x86_64.egg/jwst/assign_wcs/miri.py
     # Note that I've started modifying this code too
-    distortion = miri.mirim_distortion_cdp7b(input_model, refs)
+    distortion = miri.imaging_distortion(input_model, refs)
+    distortion = distortion | models.Scale(3600.) & models.Scale(3600.)
     # Return the distortion object that can then be queried
     return distortion
 

@@ -226,6 +226,10 @@ def make_distortion(distfile, outname):
     # it would look like this
     #distortion_transform.inverse=xanyan_to_v2v3.inverse | models.Mapping([1,0]).inverse | ident.inverse | t_transform.inverse | poly2t_mapping.inverse | poly.inverse | mapping.inverse | m_transform.inverse | det_to_sci.inverse
 
+    # Define imager bounding boxes
+    shape=1032,1024 # columns,rows
+    # The python bounding box must have form ((ylow,yhigh),(xlow,xhigh))
+    distortion_transform.bounding_box = ((-0.5, shape[1] - 0.5), (3.5, shape[0] - 0.5))
 
     #distortion_transform.bounding_box = [(4, 1028), (0, 1024)]
     #pdb.set_trace()  
@@ -311,9 +315,11 @@ def test_transform(refs):
 
     input_model=datamodels.ImageModel()
     input_model.meta.instrument.filter='F770W'
-    transform770w = miri.mirim_distortion_cdp7b(input_model, refs)
+    transform770w = miri.imaging_distortion(input_model, refs)
+    transform770w = transform770w | models.Scale(3600.) & models.Scale(3600.)
     input_model.meta.instrument.filter='F1800W'
-    transform1800w = miri.mirim_distortion_cdp7b(input_model, refs)
+    transform1800w = miri.imaging_distortion(input_model, refs)
+    transform1800w = transform1800w | models.Scale(3600.) & models.Scale(3600.)
 
     # Test the inverse transform for F770w
     x, y = transform770w.inverse(v2, v3)
