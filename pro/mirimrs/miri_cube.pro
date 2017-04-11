@@ -97,6 +97,8 @@ creator=fxpar(hdr0,'CREATOR')
 if (stregex(creator,'simulator',/bool)) then type='mirisim' $
 else type='cv'
 
+print,'File type: ',type
+
 outdir=concat_dir(indir,'stack/')
 if file_test(outdir,/directory) eq 0 then spawn, '\mkdir -p '+outdir
 outcube=concat_dir(outdir,'cube.fits')
@@ -259,7 +261,13 @@ for i=0,nfiles-1 do begin
     bzero=long64(fxpar(hdr2,'BZERO'))
     dq=dq+bzero
   endif
-  if (type eq 'mirisim') then begin
+  if ((type eq 'mirisim')and(not(keyword_set(rampdata)))) then begin
+    raw=mrdfits(files[i],'SCI',hdr1)
+    dq=mrdfits(files[i],'DQ',hdr2)
+    bzero=long64(fxpar(hdr2,'BZERO'))
+    dq=dq+bzero
+  endif
+  if ((type eq 'mirisim')and(keyword_set(rampdata))) then begin
     raw=mrdfits(files[i],'SCI',hdr1)
     dq=mrdfits(files[i],'PIXELDQ',hdr2)
     bzero=long64(fxpar(hdr2,'BZERO'))

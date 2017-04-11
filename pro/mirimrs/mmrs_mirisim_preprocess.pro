@@ -18,10 +18,10 @@
 ;   longer does so.
 ;
 ; CALLING SEQUENCE:
-;   mmrs_mirisim_preprocess,directory
+;   mmrs_mirisim_preprocess
 ;
 ; INPUTS:
-;   directory - mirisim input directory (e.g., 20161018_163749_mirisim/)
+;   none- prompts for files
 ;
 ; OPTIONAL INPUTS:
 ;
