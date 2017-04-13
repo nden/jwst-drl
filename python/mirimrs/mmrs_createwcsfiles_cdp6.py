@@ -49,15 +49,15 @@ def create_cdp6_setfiles(detband,outdir):
     if (detband == '12A'):
         fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_06.04.00.fits'
     elif (detband == '34A'):
-        fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFUSHORT_34SHORT_DISTORTION_06.04.00.fits'
+        fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFULONG_34SHORT_DISTORTION_06.04.00.fits'
     elif (detband == '12B'):
         fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFUSHORT_12MEDIUM_DISTORTION_06.04.00.fits'
     elif (detband == '34B'):
-        fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFUSHORT_34MEDIUM_DISTORTION_06.04.00.fits'
+        fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFULONG_34MEDIUM_DISTORTION_06.04.00.fits'
     elif (detband == '12C'):
         fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_06.04.00.fits'
     elif (detband == '34C'):
-        fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFUSHORT_34LONG_DISTORTION_06.04.00.fits'
+        fname=def_rootdir+'/cdp/cdp6/MIRI_FM_MIRIFULONG_34LONG_DISTORTION_06.04.00.fits'
 
     distfile=outdir+'jwst_miri_mrs'+detband+'_distortion_cdp6.asdf'
     regfile=outdir+'jwst_miri_mrs'+detband+'_regions_cdp6.asdf'
@@ -65,9 +65,11 @@ def create_cdp6_setfiles(detband,outdir):
     v2v3file=outdir+'jwst_miri_mrs'+detband+'_v2v3_cdp6.asdf'
     wavefile=outdir+'jwst_miri_mrs_wavelengthrange_cdp6.asdf'
     refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
-
+    print('Working on: '+detband)
     create_cdp6_onereference(fname,refs)
-#    test_cdp6_onereference(detband,refs)
+    print('Testing: '+detband)
+    test_cdp6_onereference(detband,refs)
+    print('Done testing: '+detband)
 
 def create_cdp6_onereference(fname, ref):
     """
@@ -165,7 +167,7 @@ def create_regions_file(slices, detector, band, channel, name, author, useafter,
     tree['regions'] = slices
     f.tree = tree
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name,all_array_storage=outformat)
+    f.write_to(name)#,all_array_storage=outformat)
 
 
 def create_reffile_header(reftype, detector, band, channel, author, useafter,
@@ -274,7 +276,7 @@ def create_v23(reftype, detector, band, channels, data, name, author, useafter, 
     f = AsdfFile()
     f.tree = tree
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name,all_array_storage=outformat)
+    f.write_to(name)#,all_array_storage=outformat)
 
 
 def create_distortion_file(reftype, detector,  band, channel, data, name, author,
@@ -293,7 +295,7 @@ def create_distortion_file(reftype, detector,  band, channel, data, name, author
     f = AsdfFile()
     f.tree = tree
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name,all_array_storage=outformat)
+    f.write_to(name)#,all_array_storage=outformat)
 
 
 def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, useafter, description, outformat):
@@ -305,7 +307,7 @@ def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, 
     f = AsdfFile()
     f.tree = tree
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name,all_array_storage=outformat)
+    f.write_to(name)#,all_array_storage=outformat)
 
 # Create the x,y to a,b models
 def create_poly_models(data, channel, coeff_names, name):
@@ -422,11 +424,11 @@ def create_wavelengthrange_file(name, detector, author, useafter, description, o
         vr[i] = wavelengthrange[ch]
     f.tree['wavelengthrange'] = vr
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name,all_array_storage=outformat)
+    f.write_to(name)#,all_array_storage=outformat)
 
 # Function to test the implemented transforms and ASDF files
 # Detband is (e.g.) '12A'
-def test_transform(detband,refs):
+def test_cdp6_onereference(detband,refs):
     ch1,ch2=mmrs_tools.channel(detband)# Convert to (e.g.) '1A' and '2A'
 
     # Do the first channel of the file

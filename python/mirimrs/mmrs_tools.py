@@ -82,29 +82,35 @@ def bandchan(channel):
     elif ((channel is '3C')or(channel is '4C')):
        newband='LONG'
        newchannel='34'
+    else:
+       newband='FAIL'
+       newchannel='FAIL'
 
     return newband,newchannel
 
 # Convenience function to turn '12A' type name into '1A' and '2A' type names
 def channel(detband):
-    if (detband is '12A'):
+    if (detband == '12A'):
        ch1='1A'
        ch2='2A'
-    elif (detband is '12B'):
+    elif (detband == '12B'):
        ch1='1B'
        ch2='2B'
-    elif (detband is '12C'):
+    elif (detband == '12C'):
        ch1='1C'
        ch2='2C'
-    elif (detband is '34A'):
+    elif (detband == '34A'):
        ch1='3A'
        ch2='4A'
-    elif (detband is '34B'):
+    elif (detband == '34B'):
        ch1='3B'
        ch2='4B'
-    elif (detband is '34C'):
+    elif (detband == '34C'):
        ch1='3C'
        ch2='4C'
+    else:
+       ch1='FAIL'
+       ch2='FAIL'
 
     return ch1,ch2
 
@@ -188,7 +194,9 @@ def abtov2v3(channel,**kwargs):
 
     # The pipeline transform actually uses the triple
     # (alpha,beta,lambda) -> (v2,v3,lambda)
-    distortion = miri.abl_to_v2v3l(input_model, therefs)
+    basedistortion = miri.abl_to_v2v3l(input_model, therefs)
+    # At present, the pipeline uses v2,v3 in degrees so convert to arcsec
+    distortion = basedistortion | models.Scale(3600.) & models.Scale(3600.) & models.Identity(1)
 
     # Therefore we need to hack a reasonable wavelength onto our input, run transform,
     # then hack it back off again

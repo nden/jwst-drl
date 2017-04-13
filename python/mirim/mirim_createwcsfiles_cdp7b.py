@@ -229,10 +229,9 @@ def make_distortion(distfile, outname):
     # Define imager bounding boxes
     shape=1032,1024 # columns,rows
     # The python bounding box must have form ((ylow,yhigh),(xlow,xhigh))
-    distortion_transform.bounding_box = ((-0.5, shape[1] - 0.5), (3.5, shape[0] - 0.5))
-
-    #distortion_transform.bounding_box = [(4, 1028), (0, 1024)]
-    #pdb.set_trace()  
+    # NB- at the moment this doesn't do anything here and must be implemented in
+    # pipeline code miri.py instead
+    distortion_transform.bounding_box = ((-0.5, shape[1] - 0.5), (3.5, shape[0] - 4.5))
 
     fdist.close()
     f = AsdfFile()
