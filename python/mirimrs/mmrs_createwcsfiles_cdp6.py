@@ -26,6 +26,7 @@ from jwst.assign_wcs import miri
 from numpy.testing import utils
 
 import mmrs_tools as mmrs_tools
+import drltimer as drltimer
 
 from matplotlib import image as mplimage
 from matplotlib import pyplot as plt
@@ -34,6 +35,7 @@ from matplotlib import pyplot as plt
 # Function to loop over all 6 MIRI MRS distortion files
 # making reference files for all of them
 # create_cdp6_all('./')
+@drltimer.fn_timer
 def create_cdp6_all(outdir):
     detbands='12A','12B','12C','34A','34B','34C'
     nbands=len(detbands)
@@ -43,6 +45,7 @@ def create_cdp6_all(outdir):
 # Function to automatically figure out the input/output required to make
 # a CDP-6 reference file for a particular detector band (e.g., 12A)
 # create_cdp6_setfiles('12A','./')
+@drltimer.fn_timer
 def create_cdp6_setfiles(detband,outdir):
     def_rootdir=os.path.expandvars('$JWSTTOOLS_DIR')
 
@@ -168,7 +171,6 @@ def create_regions_file(slices, detector, band, channel, name, author, useafter,
     f.tree = tree
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     f.write_to(name)#,all_array_storage=outformat)
-
 
 def create_reffile_header(reftype, detector, band, channel, author, useafter,
                           description=""):
