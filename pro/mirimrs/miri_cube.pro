@@ -478,8 +478,13 @@ if (~keyword_set(imonly)) then begin
   writefits,outcollapse,collapse,collhdr
 endif
 
+; Track memory usage
+thismem = memory()
+maxmem = maxmem > thismem[3]
+print, 'Max memory usage = ', string(maxmem/1e6,format='(f7.1)'), ' MB'
 
-
+print, 'Total time for MIRI_CUBE = ', systime(1)-stime0, ' seconds', format='(a,f6.0,a)'
+print, 'Successful completion of MIRI_CUBE at ' + systime()
 
 return
 end
