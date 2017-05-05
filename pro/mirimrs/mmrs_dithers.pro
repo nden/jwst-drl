@@ -13,7 +13,7 @@ pro mmrs_dithers,rootdir=rootdir,siafdir=siafdir,outdir=outdir
 
 ; This is where the dither input file from the EC lives
 if (~keyword_set(rootdir)) then $
-  rootdir='~/jwst/trunk/dithers/mirimrs/feb2017/'
+  rootdir='~/jwst-drl/trunk/dithers/mirimrs/feb2017/'
 
 ; This is where the SIAF parameter files created from mmrs_siaf live
 if (~keyword_set(siafdir)) then $
@@ -236,6 +236,7 @@ for i=24,31 do begin
   ytemp=siaf4a[0].v3_ref+dithers[i].dyidl+rad*sin(theta*!PI/180.)
   ;oplot,xtemp,ytemp,color=250,thick=4
 endfor
+xyouts,-498,-315,'PT SOURCE OPTIMIZED',charthick=5,charsize=1.5
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
@@ -273,6 +274,7 @@ oplot,siaf1a[0].v2_ref-dithers[36:39].dxidl,siaf1a[0].v3_ref+dithers[36:39].dyid
 oplot,siaf2a[0].v2_ref-dithers[40:43].dxidl,siaf2a[0].v3_ref+dithers[40:43].dyidl,psym=1,color=140,thick=4
 oplot,siaf3a[0].v2_ref-dithers[44:47].dxidl,siaf3a[0].v3_ref+dithers[44:47].dyidl,psym=1,color=200,thick=4
 oplot,siaf4a[0].v2_ref-dithers[48:51].dxidl,siaf4a[0].v3_ref+dithers[48:51].dyidl,psym=1,color=250,thick=4
+xyouts,-498,-315,'EXT SOURCE OPTIMIZED',charthick=5,charsize=1.5
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
@@ -286,61 +288,114 @@ device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Set up plot
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
-oplot,siaf1a[0].v2_ref-dithers[0:3].dxidl,siaf1a[0].v3_ref+dithers[0:3].dyidl,psym=1,thick=4,color=60
-oplot,box1A_v2-dithers[0].dxidl,box1A_v3+dithers[0].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[1].dxidl,box1A_v3+dithers[1].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[2].dxidl,box1A_v3+dithers[2].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[3].dxidl,box1A_v3+dithers[3].dyidl,color=60,thick=4
-oplot,box4A_v2-dithers[0].dxidl,box4A_v3+dithers[0].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[1].dxidl,box4A_v3+dithers[1].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[2].dxidl,box4A_v3+dithers[2].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[3].dxidl,box4A_v3+dithers[3].dyidl,color=250,thick=4
+xrange=[-497.4-siaf1a[0].v2_ref,-509.4-siaf1a[0].v2_ref]
+yrange=[-325.8-siaf1a[0].v3_ref,-313.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+; Note that we need to SUBTRACT the dither offset in v3 and ADD in v2
+; See email from Karla re target vs pointing offsets
+oplot,box1A_v2+dithers[0].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[0].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[1].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[1].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[2].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[2].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[3].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[3].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[0].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[0].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[1].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[1].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[2].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[2].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[3].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[3].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+;oplot,siaf1a[0].v2_ref,siaf1a[0].v3_ref,psym=1,thick=4
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,[0],[0],thick=4,psym=1
+xyouts,5.5,4,'ALL, 4PT, PT SOURCE',charthick=5,charsize=1.5
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Make a plot illustrating field coverage of a 4-pt ALL extended-source dither
-plotname=concat_dir(outdir,'field_es4ALL.ps')
+; Make a plot illustrating field coverage of a 2-pt CH4 Pt-source dither
+plotname=concat_dir(outdir,'field_ps2_4.ps')
 set_plot,'ps'
 device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Set up plot
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
-oplot,siaf1a[0].v2_ref-dithers[32:35].dxidl,siaf1a[0].v3_ref+dithers[32:35].dyidl,psym=1,thick=4
-oplot,box1A_v2-dithers[32].dxidl,box1A_v3+dithers[32].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[33].dxidl,box1A_v3+dithers[33].dyidl,color=60,thick=4
-oplot,box4A_v2-dithers[32].dxidl,box4A_v3+dithers[32].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[33].dxidl,box4A_v3+dithers[33].dyidl,color=250,thick=4
-oplot,box1A_v2-dithers[34].dxidl,box1A_v3+dithers[34].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[35].dxidl,box1A_v3+dithers[35].dyidl,color=60,thick=4
-oplot,box4A_v2-dithers[34].dxidl,box4A_v3+dithers[34].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[35].dxidl,box4A_v3+dithers[35].dyidl,color=250,thick=4
+xrange=[-496.4-siaf1a[0].v2_ref,-511.4-siaf1a[0].v2_ref]
+yrange=[-326.8-siaf1a[0].v3_ref,-311.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[24].dxidl-siaf4a[0].v2_ref,box1A_v3-dithers[24].dyidl-siaf4a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[25].dxidl-siaf4a[0].v2_ref,box1A_v3-dithers[25].dyidl-siaf4a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[24].dxidl-siaf4a[0].v2_ref,box4A_v3-dithers[24].dyidl-siaf4a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[25].dxidl-siaf4a[0].v2_ref,box4A_v3-dithers[25].dyidl-siaf4a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,[0],[0],thick=4,psym=1
+xyouts,1,5.5,'CH4, 2PT, PT SOURCE',charthick=5,charsize=1.5
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Make a plot illustrating field coverage of a 2-pt ALL extended-source dither
+plotname=concat_dir(outdir,'field_es2ALL.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+xrange=[-497.4-siaf1a[0].v2_ref,-509.4-siaf1a[0].v2_ref]
+yrange=[-325.8-siaf1a[0].v3_ref,-313.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[32].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[32].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[33].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[33].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[32].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[32].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[33].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[33].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,[0],[0],thick=4,psym=1
+xyouts,5.5,4,'ALL, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Make a plot illustrating field coverage of a 4-pt Ch1 extended-source dither
-plotname=concat_dir(outdir,'field_es4Ch1.ps')
+; Make a plot illustrating field coverage of a 2-pt Ch1 extended-source dither
+plotname=concat_dir(outdir,'field_es2Ch1.ps')
 set_plot,'ps'
 device,filename=plotname,/color,xsize=16,ysize=15
 loadct,39
 
 ; Set up plot
-plot,box1A_v2,box1A_v3,xrange=[-8.29,-8.49]*60,yrange=[-5.43,-5.23]*60,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle='V2 (arcsec)',ytitle='V3 (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
-oplot,siaf1a[0].v2_ref-dithers[36:39].dxidl,siaf1a[0].v3_ref+dithers[36:39].dyidl,psym=1,thick=4,color=60
-oplot,box1A_v2-dithers[36].dxidl,box1A_v3+dithers[36].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[37].dxidl,box1A_v3+dithers[37].dyidl,color=60,thick=4
-oplot,box4A_v2-dithers[36].dxidl,box4A_v3+dithers[36].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[37].dxidl,box4A_v3+dithers[37].dyidl,color=250,thick=4
-oplot,box1A_v2-dithers[38].dxidl,box1A_v3+dithers[38].dyidl,color=60,thick=4
-oplot,box1A_v2-dithers[39].dxidl,box1A_v3+dithers[39].dyidl,color=60,thick=4
-oplot,box4A_v2-dithers[38].dxidl,box4A_v3+dithers[38].dyidl,color=250,thick=4
-oplot,box4A_v2-dithers[39].dxidl,box4A_v3+dithers[39].dyidl,color=250,thick=4
+xrange=[-497.4-siaf1a[0].v2_ref,-509.4-siaf1a[0].v2_ref]
+yrange=[-325.8-siaf1a[0].v3_ref,-313.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[36].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[36].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[37].dxidl-siaf1a[0].v2_ref,box1A_v3-dithers[37].dyidl-siaf1a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[36].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[36].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[37].dxidl-siaf1a[0].v2_ref,box4A_v3-dithers[37].dyidl-siaf1a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,[0],[0],thick=4,psym=1
+xyouts,5.5,4,'CH1, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
