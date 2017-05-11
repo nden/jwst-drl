@@ -3,13 +3,12 @@
 """
 Tools to create WCS reference files for MIRI MRS using IDT reference
 products delivered with CDP-6:
-MIRI_FM_MIRIFUSHORT_12LONG_DISTORTION_04.02.00.fits
-MIRI MRS uses 5 reference files of type:
+e.g., MIRI_FM_MIRIFUSHORT_12SHORT_DISTORTION_06.04.00.fits
+MIRI MRS uses 4 reference files of type:
 DISTORTION
 SPECWCS
 REGIONS
 WAVELENGTHRANGE
-V2V3
 create_cdp6_references() creates all reference files.
 """
 from __future__ import (absolute_import, division, print_function,
@@ -65,9 +64,8 @@ def create_cdp6_setfiles(detband,outdir):
     distfile=outdir+'jwst_miri_mrs'+detband+'_distortion_cdp6.asdf'
     regfile=outdir+'jwst_miri_mrs'+detband+'_regions_cdp6.asdf'
     specfile=outdir+'jwst_miri_mrs'+detband+'_specwcs_cdp6.asdf'
-    v2v3file=outdir+'jwst_miri_mrs'+detband+'_v2v3_cdp6.asdf'
     wavefile=outdir+'jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-    refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+    refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'wavelengthrange':wavefile}
     print('Working on: '+detband)
     create_cdp6_onereference(fname,refs)
     print('Testing: '+detband)
@@ -86,7 +84,6 @@ def create_cdp6_onereference(fname, ref):
         {'distortion': 'jwst_miri_distortion_0001.asdf',
          'regions': 'jwst_miri_regions_0001.asdf',
          'specwcs': 'jwst_miri_specwcs_0001.asdf',
-         'v2v3': 'jwst_miri_v2v3_00001.asdf',
          'wavelengthrange': 'jwst_miri_wavelengthrange_0001.asdf'}
     Examples
     --------
@@ -117,6 +114,7 @@ def create_cdp6_onereference(fname, ref):
         bdel_ch2 = f[0].header['B_DEL'+ch2[2]]
     # Get channel names, e.g. 1LONG, 2LONG
     channels = [c + band for c in channel]
+    # Note that now 'channel' is (e.g.) 12, while 'channels' is (e.g.) '1SHORT','2SHORT'
 
     # MRS reference files are long enough that keeping tables as inline
     # text is impractical
@@ -145,15 +143,13 @@ def create_cdp6_onereference(fname, ref):
     useafter = "2000-01-01T00:00:00"
     author =  'Adrian M. Glauser, David R. Law'  #Author of the data
     description = 'MIRI MRS CDP6 distortion reference data.'
-    create_distortion_file(reftype='distortion', detector=detector, band=band, channel=channel,
-                           data=(amodel1, bmodel1, xmodel1, ymodel1, smodel1, smodel2), name=ref['distortion'],
+
+    create_distortion_file(reftype='distortion', detector=detector, band=band, channel=channel, channels=channels,
+                           data=(amodel1, bmodel1, xmodel1, ymodel1, smodel1, smodel2, ab_v23, v23_ab), name=ref['distortion'],
                            author=author, useafter=useafter, description=description, outformat=outformat)
 
     create_specwcs_file('specwcs', detector, band, channel, lmodel1, ref['specwcs'], author,
                         useafter, description, outformat)
-
-    create_v23('v2v3', detector, band, channels, (ab_v23, v23_ab), ref['v2v3'], author, useafter,
-               description, outformat)
 
     create_regions_file(slices, detector, band, channel, ref['regions'], author, useafter,
                description, outformat)
@@ -192,12 +188,12 @@ def create_reffile_header(reftype, detector, band, channel, author, useafter,
     return tree
 
 
-def create_v23(reftype, detector, band, channels, data, name, author, useafter, description, outformat):
-    """
-    Create the transform from MIRI Local to telescope V2/V3 system for all channels.
-    """
-    channel = "".join([ch[0] for ch in channels])
-    tree = create_reffile_header(reftype, detector, band, channel, author, useafter, description)
+def create_distortion_file(reftype, detector,  band, channel, channels, data, name, author,
+                           useafter, description, outformat):
+
+    description = 'MIRI MRS Distortion Maps'
+    tree = create_reffile_header(reftype, detector, band, channel, author, useafter,
+                                 description)
     """
     tree = {"detector": detector,
             "instrument" : "MIRI",
@@ -213,8 +209,27 @@ def create_v23(reftype, detector, band, channels, data, name, author, useafter, 
             }
     """
     tree['filename'] = name
-    ab_v23 = data[0]
-    v23_ab = data[1]
+
+    # Split the provided data vector into its pieces
+    adata, bdata, xdata, ydata, sdata1, sdata2, ab_v23, v23_ab = data
+
+
+    """
+    Construct the xy -> alpha,beta model
+    """
+
+    tree['alpha_model'] = adata
+    tree['beta_model'] = bdata
+    tree['x_model'] = xdata
+    tree['y_model'] = ydata
+    tree['slice_model'] = {str(channel[0])+band: sdata1, str(channel[1])+band: sdata2}
+
+
+    """
+    Create the transform from MIRI Local to telescope V2/V3 system for all channels.
+    """
+    channel = "".join([ch[0] for ch in channels])
+
     m = {}
     # Read in coefficients from the tables.  Note that we'll flip the coefficient
     # ordering since they were set up for column-major indexing (IDL) but we're working in
@@ -273,29 +288,11 @@ def create_v23(reftype, detector, band, channels, data, name, author, useafter, 
     m[channels[0]] = ch1
     m[channels[1]] = ch2
 
-    tree['model'] = m
+    tree['abv2v3_model'] = m
 
     f = AsdfFile()
     f.tree = tree
-#    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name)#,all_array_storage=outformat)
 
-
-def create_distortion_file(reftype, detector,  band, channel, data, name, author,
-                           useafter, description, outformat):
-
-    description = 'MIRI MRS Distortion Maps'
-    tree = create_reffile_header(reftype, detector, band, channel, author, useafter,
-                                 description)
-    tree['filename'] = name
-    adata, bdata, xdata, ydata, sdata1, sdata2 = data
-    tree['alpha_model'] = adata
-    tree['beta_model'] = bdata
-    tree['x_model'] = xdata
-    tree['y_model'] = ydata
-    tree['slice_model'] = {str(channel[0])+band: sdata1, str(channel[1])+band: sdata2}
-    f = AsdfFile()
-    f.tree = tree
 #    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     f.write_to(name)#,all_array_storage=outformat)
 
@@ -506,15 +503,16 @@ def test_cdp6_onereference(detband,refs):
 
 # MRS test reference data
 # This stuff is all 1-indexed for x,y from Adrian's report
+# Have added a few other useful points
 mrs_ref_data = {
-    '1A': {'x': np.array([28.310396, 475.02154, 493.9777, 41.282537, 58.998266]),
-           'y': np.array([512., 10, 100, 900, 1014]),
-           's': np.array([11, 1, 1, 21, 21]),
-           'alpha': np.array([0, -1.66946, 1.65180, -1.70573, 1.70244]),
-           'beta': np.array([0, -1.77210, -1.77210, 1.77210, 1.77210]),
-           'lam': np.array([5.34437, 4.86642, 4.95325, 5.65296, 5.74349]),
-           'xan': np.array([-8.39424, -8.41746, -8.36306, -8.42653, -8.37026]),
-           'yan': np.array([-2.48763, -2.52081, -2.51311, -2.46269, -2.45395]),
+    '1A': {'x': np.array([28.310396, 475.02154, 493.9777, 41.282537, 58.998266, 26.985]),
+           'y': np.array([512., 10, 100, 900, 1014, 40.951]),
+           's': np.array([11, 1, 1, 21, 21, 11]),
+           'alpha': np.array([0, -1.66946, 1.65180, -1.70573, 1.70244, 0.26]),
+           'beta': np.array([0, -1.77210, -1.77210, 1.77210, 1.77210, 0.05]),
+           'lam': np.array([5.34437, 4.86642, 4.95325, 5.65296, 5.74349, 4.92]),
+           'xan': np.array([-8.39424, -8.41746, -8.36306, -8.42653, -8.37026, -8.39008]),
+           'yan': np.array([-2.48763, -2.52081, -2.51311, -2.46269, -2.45395, -2.486163]),
            },
     '1B': {'x': np.array([28.648221, 475.07259, 493.98157, 41.559386, 59.738296]),
            'y': np.array([512., 10, 100, 900, 1014]),
