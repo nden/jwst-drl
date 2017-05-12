@@ -20,6 +20,7 @@ from asdf import AsdfFile
 import pdb as pdb
 from astropy.io import fits
 from astropy.modeling import models
+from astropy import units as u
 from jwst import datamodels
 from jwst.assign_wcs import miri
 from numpy.testing import utils
@@ -27,8 +28,7 @@ from numpy.testing import utils
 import mmrs_tools as mmrs_tools
 import drltimer as drltimer
 
-from matplotlib import image as mplimage
-from matplotlib import pyplot as plt
+from jwst.datamodels.wcs_ref_models import *
 
 
 # Function to loop over all 6 MIRI MRS distortion files
@@ -168,78 +168,58 @@ def create_cdp6_onereference(fname, ref):
 
 
 def create_regions_file(slices, detector, band, channel, name, author, useafter, description, outformat):
-    tree = create_reffile_header("REGIONS", detector, band, channel, author, useafter,
+    model = RegionsModel()
+    model = create_reffile_header(model, detector, band, channel, author, useafter,
                                  description)
-    tree['filename'] = name
-    f = AsdfFile()
-    tree['regions'] = slices
-    f.tree = tree
-#    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name)#,all_array_storage=outformat)
+    model.meta.filename = name
+    model.regions = slices
+    #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
+    model.save(name)
 
-def create_reffile_header(reftype, detector, band, channel, author, useafter,
+
+def create_reffile_header(model, detector, band, channel, author, useafter,
                           description=""):
-    tree = {"author": author,
-            "description": description,
-            "detector": detector,
-            "exp_type": "MIR_MRS",
-            "filename": "",
-            "instrume": "MIRI",
-            "pedigree": "GROUND",
-            "reftype": reftype,
-            "telescope": "JWST",
-            "useafter": useafter,
-            "band": band,
-            "channel": channel,
-            "title": "MIRI IFU model - based on CDP-6",
-            #"history": "DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;"
-            }
-    return tree
+    model.meta.description = description
+    model.meta.author = author
+    model.meta.useafter = useafter
+    model.meta.pedigree = 'GROUND'
+    model.meta.instrument.name = "MIRI"
+    model.meta.instrument.detector = detector
+    model.meta.instrument.channel = channel
+    model.meta.instrument.band = band
+    model.meta.exposure.type = "MIR_MRS"
+
+    return model
 
 
 def create_distortion_file(reftype, detector,  band, channel, channels, data, name, author,
                            useafter, description, outformat):
-
+    dist = DistortionMRSModel()
     description = 'MIRI MRS Distortion Maps'
-    tree = create_reffile_header(reftype, detector, band, channel, author, useafter,
+    dist = create_reffile_header(dist, detector, band, channel, author, useafter,
                                  description)
-    """
-    tree = {"detector": detector,
-            "instrument" : "MIRI",
-            "band": band,
-            "channel": channel,
-            "exp_type": "MIR_MRS",
-            "pedigree": "GROUND",
-            "title": "MIRI IFU model - based on CDP-6",
-            "reftype": reftype,
-            "author": author,
-            "useafter": useafter,
-            "description": description
-            }
-    """
-    tree['filename'] = name
 
+    dist.meta.filename = name
     # Split the provided data vector into its pieces
     adata, bdata, xdata, ydata, bzero, bdel, ab_v23, v23_ab = data
 
-
-    """
-    Construct the xy -> alpha,beta model
-    """
-
-    tree['alpha_model'] = adata
-    tree['beta_model'] = bdata
-    tree['x_model'] = xdata
-    tree['y_model'] = ydata
-    tree['bzero'] = bzero
-    tree['bdel'] = bdel
+    dist.slices = list(xdata.keys())
+    xd = [xdata[sl] for sl in xdata]
+    dist.x_model = xd
+    yd = [ydata[sl] for sl in ydata]
+    dist.y_model = yd
+    ad = [adata[sl] for sl in adata]
+    dist.alpha_model = ad
+    bd = [bdata[sl] for sl in bdata]
+    dist.beta_model = bd
+    dist.bzero = {'channel_band': list(bzero.keys()), 'beta_zero': list(bzero.values())}
+    dist.bdel = {'channel_band': list(bdel.keys()), 'delta_beta': list(bdel.values())}
 
     """
     Create the transform from MIRI Local to telescope V2/V3 system for all channels.
     """
     channel = "".join([ch[0] for ch in channels])
 
-    m = {}
     # Read in coefficients from the tables.  Note that we'll flip the coefficient
     # ordering since they were set up for column-major indexing (IDL) but we're working in
     # python (row-major)
@@ -292,30 +272,24 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
     ch1.inverse =  xanyan_to_v2v3.inverse | map | ch1_a & ch1_b
     ch2.inverse =  xanyan_to_v2v3.inverse | map | ch2_a & ch2_b
 
-    #pdb.set_trace()  
-
-    m[channels[0]] = ch1
-    m[channels[1]] = ch2
-
-    tree['abv2v3_model'] = m
-
-    f = AsdfFile()
-    f.tree = tree
-
-#    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name)#,all_array_storage=outformat)
+    #pdb.set_trace()
+    # save to file
+    dist.abv2v3_model = {'channel_band': channels, 'model': [ch1, ch2]}
+    dist.meta.input_units = u.pix
+    dist.meta.output_units = u.arcsec
+    dist.save(name)
 
 
 def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, useafter, description, outformat):
-    tree = create_reffile_header(reftype, detector, band, channel, author, useafter,
+    model = SpecwcsModel()
+    model = create_reffile_header(model, detector, band, channel, author, useafter,
                                  description)
-    tree['subarray'] = "N/A"
-    tree['filename'] = name
-    tree['model'] = lmodel
-    f = AsdfFile()
-    f.tree = tree
-#    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name)#,all_array_storage=outformat)
+    model.meta.subarray.name = "N/A"
+    model.meta.filename = name
+    model.meta.model = lmodel
+
+    #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
+    model.save(name)
 
 # Create the x,y to a,b models
 def create_poly_models(data, channel, coeff_names, name):
@@ -376,7 +350,7 @@ def create_xy_models(data, channel, coeff_names, name):
         thisshift=models.Shift(-1)
         # Put the models together
         transforms[sl] =  thisxform | thisshift
- 
+
     return transforms
 
 
@@ -396,7 +370,7 @@ def create_beta_models(b0, bdel, channel, nslices):
 
 
 def create_wavelengthrange_file(name, detector, author, useafter, description, outformat):
-    f = AsdfFile()
+    model = WavelengthrangeModel()
 
     # Relaxing the range to match the distortion. The table above
     # comes from the report and is "as designed".
@@ -416,20 +390,17 @@ def create_wavelengthrange_file(name, detector, author, useafter, description, o
     channels = ['1SHORT', '1MEDIUM', '1LONG', '2SHORT', '2MEDIUM', '2LONG',
                 '3SHORT', '3MEDIUM', '3LONG', '4SHORT', '4MEDIUM', '4LONG']
 
-    tree = create_reffile_header("WAVELENGTHRANGE", detector, band="N/A", channel="N/A", author=author, 
+    model = create_reffile_header(model, detector, band="N/A", channel="N/A", author=author,
                                  useafter=useafter, description=description)
-    tree['filename'] = name
-    tree['author'] = 'David Law'
-    tree['detector'] = "N/A"
-    tree['channels'] = channels
-
-    f.tree = tree
-    vr = np.empty((12, 2), dtype=np.float)
-    for i, ch in enumerate(channels):
-        vr[i] = wavelengthrange[ch]
-    f.tree['wavelengthrange'] = vr
-#    f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    f.write_to(name)#,all_array_storage=outformat)
+    model.meta.filename = name
+    model.meta.author = ''
+    model.meta.instrument.detector = "N/A"
+    model.channels = channels
+    wr = [wavelengthrange[ch] for ch in channels]
+    model.wavelengthrange = wr
+    model.meta.wavelength_units = u.micron
+    #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
+    model.save(name)
 
 # Function to test the implemented transforms and ASDF files
 # Detband is (e.g.) '12A'
