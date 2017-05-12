@@ -116,6 +116,13 @@ def create_cdp6_onereference(fname, ref):
     channels = [c + band for c in channel]
     # Note that now 'channel' is (e.g.) 12, while 'channels' is (e.g.) '1SHORT','2SHORT'
 
+    bzero = {}
+    bdel = {}
+    for c in channel:
+        cb = c+band
+        bzero[cb] = f[0].header['B_ZERO' + c]
+        bdel[cb] = f[0].header['B_DEL' + c]
+
     # MRS reference files are long enough that keeping tables as inline
     # text is impractical
     outformat='inline'
@@ -137,15 +144,17 @@ def create_cdp6_onereference(fname, ref):
     xmodel1.update(xmodel2)
     ymodel1.update(ymodel2)
     lmodel1.update(lmodel2)
-    bmodel1, smodel1 = create_beta_models(b0_ch1, bdel_ch1, int(channel[0]), len(alpha1))
-    bmodel2, smodel2 = create_beta_models(b0_ch2, bdel_ch2, int(channel[1]), len(alpha2))
+
+    bmodel1 = create_beta_models(b0_ch1, bdel_ch1, int(channel[0]), len(alpha1))
+    bmodel2 = create_beta_models(b0_ch2, bdel_ch2, int(channel[1]), len(alpha2))
+
     bmodel1.update(bmodel2)
     useafter = "2000-01-01T00:00:00"
     author =  'Adrian M. Glauser, David R. Law'  #Author of the data
     description = 'MIRI MRS CDP6 distortion reference data.'
 
     create_distortion_file(reftype='distortion', detector=detector, band=band, channel=channel, channels=channels,
-                           data=(amodel1, bmodel1, xmodel1, ymodel1, smodel1, smodel2, ab_v23, v23_ab), name=ref['distortion'],
+                           data=(amodel1, bmodel1, xmodel1, ymodel1, bzero, bdel, ab_v23, v23_ab), name=ref['distortion'],
                            author=author, useafter=useafter, description=description, outformat=outformat)
 
     create_specwcs_file('specwcs', detector, band, channel, lmodel1, ref['specwcs'], author,
@@ -211,7 +220,7 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
     tree['filename'] = name
 
     # Split the provided data vector into its pieces
-    adata, bdata, xdata, ydata, sdata1, sdata2, ab_v23, v23_ab = data
+    adata, bdata, xdata, ydata, bzero, bdel, ab_v23, v23_ab = data
 
 
     """
@@ -222,8 +231,8 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
     tree['beta_model'] = bdata
     tree['x_model'] = xdata
     tree['y_model'] = ydata
-    tree['slice_model'] = {str(channel[0])+band: sdata1, str(channel[1])+band: sdata2}
-
+    tree['bzero'] = bzero
+    tree['bdel'] = bdel
 
     """
     Create the transform from MIRI Local to telescope V2/V3 system for all channels.
@@ -378,15 +387,12 @@ def build_coeff_names(names):
 
 def create_beta_models(b0, bdel, channel, nslices):
     beta = {}
-    slices = {}
     for s in range(nslices):
         sl = channel * 100 + s +1
         beta_s = b0 + s * bdel
         m = models.Const1D(beta_s, name='det2local') #xy2beta and xy2lam
         beta[sl] = m
-        inv = models.Const1D(sl)
-        slices[beta_s] = models.Mapping([1,]) | inv
-    return beta, slices
+    return beta
 
 
 def create_wavelengthrange_file(name, detector, author, useafter, description, outformat):
@@ -503,16 +509,15 @@ def test_cdp6_onereference(detband,refs):
 
 # MRS test reference data
 # This stuff is all 1-indexed for x,y from Adrian's report
-# Have added a few other useful points
 mrs_ref_data = {
-    '1A': {'x': np.array([28.310396, 475.02154, 493.9777, 41.282537, 58.998266, 26.985]),
-           'y': np.array([512., 10, 100, 900, 1014, 40.951]),
-           's': np.array([11, 1, 1, 21, 21, 11]),
-           'alpha': np.array([0, -1.66946, 1.65180, -1.70573, 1.70244, 0.26]),
-           'beta': np.array([0, -1.77210, -1.77210, 1.77210, 1.77210, 0.05]),
-           'lam': np.array([5.34437, 4.86642, 4.95325, 5.65296, 5.74349, 4.92]),
-           'xan': np.array([-8.39424, -8.41746, -8.36306, -8.42653, -8.37026, -8.39008]),
-           'yan': np.array([-2.48763, -2.52081, -2.51311, -2.46269, -2.45395, -2.486163]),
+    '1A': {'x': np.array([28.310396, 475.02154, 493.9777, 41.282537, 58.998266]),
+           'y': np.array([512., 10, 100, 900, 1014]),
+           's': np.array([11, 1, 1, 21, 21]),
+           'alpha': np.array([0, -1.66946, 1.65180, -1.70573, 1.70244]),
+           'beta': np.array([0, -1.77210, -1.77210, 1.77210, 1.77210]),
+           'lam': np.array([5.34437, 4.86642, 4.95325, 5.65296, 5.74349]),
+           'xan': np.array([-8.39424, -8.41746, -8.36306, -8.42653, -8.37026]),
+           'yan': np.array([-2.48763, -2.52081, -2.51311, -2.46269, -2.45395]),
            },
     '1B': {'x': np.array([28.648221, 475.07259, 493.98157, 41.559386, 59.738296]),
            'y': np.array([512., 10, 100, 900, 1014]),

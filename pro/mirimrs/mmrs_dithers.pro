@@ -307,9 +307,82 @@ theta=findgen(360)
 ch1sig=0.13
 ch4sig=0.48
 oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
-oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
 oplot,[0],[0],thick=4,psym=1
 xyouts,5.5,4,'ALL, 4PT, PT SOURCE',charthick=5,charsize=1.5
+xyouts,-1.1,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.5,-0.6,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0,-3,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,0,-6,'Ch 4',charthick=5,charsize=1.5,color=250
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Make a plot illustrating field coverage of a 2-pt CH2 Pt-source dither
+plotname=concat_dir(outdir,'field_ps2_2.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+xrange=[-496.4-siaf1a[0].v2_ref,-511.4-siaf1a[0].v2_ref]
+yrange=[-326.8-siaf1a[0].v3_ref,-311.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[8].dxidl-siaf2a[0].v2_ref,box1A_v3-dithers[8].dyidl-siaf2a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[9].dxidl-siaf2a[0].v2_ref,box1A_v3-dithers[9].dyidl-siaf2a[0].v3_ref,color=60,thick=5
+oplot,box2A_v2+dithers[8].dxidl-siaf2a[0].v2_ref,box2A_v3-dithers[8].dyidl-siaf2a[0].v3_ref,color=140,thick=5
+oplot,box2A_v2+dithers[9].dxidl-siaf2a[0].v2_ref,box2A_v3-dithers[9].dyidl-siaf2a[0].v3_ref,color=140,thick=5
+oplot,box4A_v2+dithers[8].dxidl-siaf2a[0].v2_ref,box4A_v3-dithers[8].dyidl-siaf2a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[9].dxidl-siaf2a[0].v2_ref,box4A_v3-dithers[9].dyidl-siaf2a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
+oplot,[0],[0],thick=4,psym=1
+xyouts,1,5.5,'CH2, 2PT, PT SOURCE',charthick=5,charsize=1.5
+xyouts,3.5,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.6,-0.7,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,-2,-4,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,-2,-7,'Ch 4',charthick=5,charsize=1.5,color=250
+
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Make a plot illustrating field coverage of a 2-pt CH3 Pt-source dither
+plotname=concat_dir(outdir,'field_ps2_3.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+xrange=[-496.4-siaf1a[0].v2_ref,-511.4-siaf1a[0].v2_ref]
+yrange=[-326.8-siaf1a[0].v3_ref,-311.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[16].dxidl-siaf3a[0].v2_ref,box1A_v3-dithers[16].dyidl-siaf3a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[17].dxidl-siaf3a[0].v2_ref,box1A_v3-dithers[17].dyidl-siaf3a[0].v3_ref,color=60,thick=5
+oplot,box3A_v2+dithers[16].dxidl-siaf3a[0].v2_ref,box3A_v3-dithers[16].dyidl-siaf3a[0].v3_ref,color=200,thick=5
+oplot,box3A_v2+dithers[17].dxidl-siaf3a[0].v2_ref,box3A_v3-dithers[17].dyidl-siaf3a[0].v3_ref,color=200,thick=5
+oplot,box4A_v2+dithers[16].dxidl-siaf3a[0].v2_ref,box4A_v3-dithers[16].dyidl-siaf3a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[17].dxidl-siaf3a[0].v2_ref,box4A_v3-dithers[17].dyidl-siaf3a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
+oplot,[0],[0],thick=4,psym=1
+xyouts,1,5.5,'CH3, 2PT, PT SOURCE',charthick=5,charsize=1.5
+xyouts,3.5,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.6,-0.7,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,-2,-4,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,-2,-7,'Ch 4',charthick=5,charsize=1.5,color=250
+
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
@@ -335,9 +408,14 @@ theta=findgen(360)
 ch1sig=0.13
 ch4sig=0.48
 oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
-oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
 oplot,[0],[0],thick=4,psym=1
 xyouts,1,5.5,'CH4, 2PT, PT SOURCE',charthick=5,charsize=1.5
+xyouts,3.5,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.6,-0.7,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,-2,-4,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,-2,-7,'Ch 4',charthick=5,charsize=1.5,color=250
+
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
@@ -364,9 +442,13 @@ theta=findgen(360)
 ch1sig=0.13
 ch4sig=0.48
 oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
-oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
 oplot,[0],[0],thick=4,psym=1
 xyouts,5.5,4,'ALL, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+xyouts,-1.1,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.5,-0.6,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0,-3,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,0,-6,'Ch 4',charthick=5,charsize=1.5,color=250
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
@@ -392,16 +474,112 @@ theta=findgen(360)
 ch1sig=0.13
 ch4sig=0.48
 oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
-oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
 oplot,[0],[0],thick=4,psym=1
 xyouts,5.5,4,'CH1, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+xyouts,-1.1,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.5,-0.6,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0,-2.5,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,0,-5.5,'Ch 4',charthick=5,charsize=1.5,color=250
 
 device,/close
 spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Make a plot illustrating field coverage of a 2-pt Ch2 extended-source dither
+plotname=concat_dir(outdir,'field_es2Ch2.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
 
+; Set up plot
+xrange=[-497.4-siaf1a[0].v2_ref,-509.4-siaf1a[0].v2_ref]
+yrange=[-325.8-siaf1a[0].v3_ref,-313.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[40].dxidl-siaf2a[0].v2_ref,box1A_v3-dithers[40].dyidl-siaf2a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[41].dxidl-siaf2a[0].v2_ref,box1A_v3-dithers[41].dyidl-siaf2a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[40].dxidl-siaf2a[0].v2_ref,box4A_v3-dithers[40].dyidl-siaf2a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[41].dxidl-siaf2a[0].v2_ref,box4A_v3-dithers[41].dyidl-siaf2a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
+oplot,[0],[0],thick=4,psym=1
+xyouts,5.5,4,'CH2, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+xyouts,-1.1,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.5,-0.6,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0,-2.5,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,0,-5.5,'Ch 4',charthick=5,charsize=1.5,color=250
 
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Make a plot illustrating field coverage of a 2-pt Ch3 extended-source dither
+plotname=concat_dir(outdir,'field_es2Ch3.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+xrange=[-497.4-siaf1a[0].v2_ref,-509.4-siaf1a[0].v2_ref]
+yrange=[-325.8-siaf1a[0].v3_ref,-313.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[44].dxidl-siaf3a[0].v2_ref,box1A_v3-dithers[44].dyidl-siaf3a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[45].dxidl-siaf3a[0].v2_ref,box1A_v3-dithers[45].dyidl-siaf3a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[44].dxidl-siaf3a[0].v2_ref,box4A_v3-dithers[44].dyidl-siaf3a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[45].dxidl-siaf3a[0].v2_ref,box4A_v3-dithers[45].dyidl-siaf3a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
+oplot,[0],[0],thick=4,psym=1
+xyouts,5.5,4,'CH3, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+xyouts,-1.1,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.5,-0.6,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0,-2.5,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,0,-5.5,'Ch 4',charthick=5,charsize=1.5,color=250
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Make a plot illustrating field coverage of a 2-pt Ch4 extended-source dither
+plotname=concat_dir(outdir,'field_es2Ch4.ps')
+set_plot,'ps'
+device,filename=plotname,/color,xsize=16,ysize=15
+loadct,39
+
+; Set up plot
+xrange=[-497.4-siaf1a[0].v2_ref,-509.4-siaf1a[0].v2_ref]
+yrange=[-325.8-siaf1a[0].v3_ref,-313.8-siaf1a[0].v3_ref]
+plot,box1A_v2,box1A_v3,xrange=xrange,yrange=yrange,/nodata,/xstyle,/ystyle,xthick=5,ythick=5,thick=4,charsize=1.5,xtitle=textoidl('\Delta')+'RA (arcsec)',ytitle=textoidl('\Delta')+'DEC (arcsec)',charthick=4,title=strcompress('MRS Dithers: Pre-flight ('+thedate+')')
+oplot,box1A_v2+dithers[48].dxidl-siaf4a[0].v2_ref,box1A_v3-dithers[48].dyidl-siaf4a[0].v3_ref,color=60,thick=5
+oplot,box1A_v2+dithers[49].dxidl-siaf4a[0].v2_ref,box1A_v3-dithers[49].dyidl-siaf4a[0].v3_ref,color=60,thick=5
+oplot,box4A_v2+dithers[48].dxidl-siaf4a[0].v2_ref,box4A_v3-dithers[48].dyidl-siaf4a[0].v3_ref,color=250,thick=5
+oplot,box4A_v2+dithers[49].dxidl-siaf4a[0].v2_ref,box4A_v3-dithers[49].dyidl-siaf4a[0].v3_ref,color=250,thick=5
+; Plot PSF FWHM
+theta=findgen(360)
+ch1sig=0.13
+ch4sig=0.48
+oplot,2.35*ch1sig*cos(theta*!PI/180.),2.35*ch1sig*sin(theta*!PI/180.),thick=5
+oplot,2.35*ch4sig*cos(theta*!PI/180.),2.35*ch4sig*sin(theta*!PI/180.),thick=5,linestyle=2
+oplot,[0],[0],thick=4,psym=1
+xyouts,5.5,4,'CH4, 2PT, EXT SOURCE',charthick=5,charsize=1.5
+xyouts,-1.1,-1,textoidl('28 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0.5,-0.6,textoidl('8 \mu')+'m',charthick=5,charsize=1.3
+xyouts,0,-2.5,'Ch 1',charthick=5,charsize=1.5,color=60
+xyouts,0,-5.5,'Ch 4',charthick=5,charsize=1.5,color=250
+
+device,/close
+spawn, strcompress('ps2pdf '+plotname+' '+ml_strreplace(plotname,'.ps','.pdf'))
 
 return
 end

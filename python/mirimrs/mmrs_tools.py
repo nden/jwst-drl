@@ -18,42 +18,36 @@ def setreffiles_cdp6(channel):
        distfile=def_rootdir+'/CRDS/jwst_miri_mrs12A_distortion_cdp6.asdf'
        regfile=def_rootdir+'/CRDS/jwst_miri_mrs12A_regions_cdp6.asdf'
        specfile=def_rootdir+'/CRDS/jwst_miri_mrs12A_specwcs_cdp6.asdf'
-       #v2v3file=def_rootdir+'/CRDS/jwst_miri_mrs12A_v2v3_cdp6.asdf'
        wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
        refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
     elif ((channel is '3A')or(channel is '4A')):
        distfile=def_rootdir+'/CRDS/jwst_miri_mrs34A_distortion_cdp6.asdf'
        regfile=def_rootdir+'/CRDS/jwst_miri_mrs34A_regions_cdp6.asdf'
        specfile=def_rootdir+'/CRDS/jwst_miri_mrs34A_specwcs_cdp6.asdf'
-       #v2v3file=def_rootdir+'/CRDS/jwst_miri_mrs34A_v2v3_cdp6.asdf'
        wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
        refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
     elif ((channel is '1B')or(channel is '2B')):
        distfile=def_rootdir+'/CRDS/jwst_miri_mrs12B_distortion_cdp6.asdf'
        regfile=def_rootdir+'/CRDS/jwst_miri_mrs12B_regions_cdp6.asdf'
        specfile=def_rootdir+'/CRDS/jwst_miri_mrs12B_specwcs_cdp6.asdf'
-       #v2v3file=def_rootdir+'/CRDS/jwst_miri_mrs12B_v2v3_cdp6.asdf'
        wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
        refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
     elif ((channel is '3B')or(channel is '4B')):
        distfile=def_rootdir+'/CRDS/jwst_miri_mrs34B_distortion_cdp6.asdf'
        regfile=def_rootdir+'/CRDS/jwst_miri_mrs34B_regions_cdp6.asdf'
        specfile=def_rootdir+'/CRDS/jwst_miri_mrs34B_specwcs_cdp6.asdf'
-       #v2v3file=def_rootdir+'/CRDS/jwst_miri_mrs34B_v2v3_cdp6.asdf'
        wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
        refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
     elif ((channel is '1C')or(channel is '2C')):
        distfile=def_rootdir+'/CRDS/jwst_miri_mrs12C_distortion_cdp6.asdf'
        regfile=def_rootdir+'/CRDS/jwst_miri_mrs12C_regions_cdp6.asdf'
        specfile=def_rootdir+'/CRDS/jwst_miri_mrs12C_specwcs_cdp6.asdf'
-       #v2v3file=def_rootdir+'/CRDS/jwst_miri_mrs12C_v2v3_cdp6.asdf'
        wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
        refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
     elif ((channel is '3C')or(channel is '4C')):
        distfile=def_rootdir+'/CRDS/jwst_miri_mrs34C_distortion_cdp6.asdf'
        regfile=def_rootdir+'/CRDS/jwst_miri_mrs134_regions_cdp6.asdf'
        specfile=def_rootdir+'/CRDS/jwst_miri_mrs34C_specwcs_cdp6.asdf'
-       #v2v3file=def_rootdir+'/CRDS/jwst_miri_mrs34C_v2v3_cdp6.asdf'
        wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
        refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
     else:
