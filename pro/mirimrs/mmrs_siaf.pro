@@ -44,7 +44,7 @@
 pro mmrs_siaf,channel,rootdir=rootdir,parfile=parfile
 
 if (~keyword_set(rootdir)) then $
-  rootdir='~/jwst/trunk/cdp/cdp6/'
+  rootdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'cdp/cdp6/')
 
 ; Strip input channel into components, e.g.
 ; if channel='1A' then

@@ -9,7 +9,7 @@ pro mmrs_assessdither,channel,dith,wave=wave,da=da,db=db,outfile=outfile,rootdir
 
 ; This is where the dither input file from the EC lives
 if (~keyword_set(rootdir)) then $
-  rootdir='~/jwst/trunk/dithers/mirimrs/feb2017/'
+  rootdir=concat_dir(ml_getenv('JWSTTOOLS_DIR'),'dithers/mirimrs/feb2017/')
 
 ; This is where the SIAF parameter files created from mmrs_siaf live
 if (~keyword_set(siafdir)) then $
