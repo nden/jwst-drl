@@ -34,6 +34,7 @@ from jwst import datamodels
 from jwst.assign_wcs import miri
 
 import mirim_tools as mirim_tools
+from jwst.datamodels import DistortionModel, FilteroffsetModel
 
 # Print full arrays for debugging
 np.set_printoptions(threshold=np.inf)
@@ -113,21 +114,21 @@ def make_filter_offset(distfile, outname):
     with fits.open(distfile) as f:
         data = f[9].data
 
-    d = dict.fromkeys(data.field('FILTER'))
+    d = []
     for i in data:
-        d[i[0]] = {'column_offset': -i[1], 'row_offset': -i[2]}
-    tree = {"title": "MIRI imager filter offset - CDP7B",
-            "reftype": "FILTEROFFSET",
-            "instrument": "MIRI",
-            "detector": "MIRIMAGE",
-            "pedigree": "GROUND",
-            "author": "D. Law",
-            "exp_type": "MIR_IMAGE"
-            }
-    tree.update(d)
-    f = AsdfFile()
-    f.tree = tree
-    f.write_to(outname,all_array_storage='inline')
+        d.append({'name':i[0],'column_offset': i[1], 'row_offset': i[2]} )
+
+    model = FilteroffsetModel()
+    model.meta.title = "MIRI imager filter offset - CDP7B"
+    model.meta.instrument.name = "MIRI"
+    model.meta.instrument.detector = "MIRIMAGE"
+    model.meta.pedigree = "GROUND"
+    model.meta.exposure.type = "MIR_IMAGE"
+    model.meta.author = "D. Law"
+
+    for item in data:
+        model.filters = d
+    model.save(outname)
 
 
 def make_distortion(distfile, outname):
@@ -234,19 +235,17 @@ def make_distortion(distfile, outname):
     distortion_transform.bounding_box = ((-0.5, shape[1] - 0.5), (3.5, shape[0] - 4.5))
 
     fdist.close()
-    f = AsdfFile()
-    tree = {"title": "MIRI imager distortion - CDP7B",
-            "reftype": "DISTORTION",
-            "instrument": "MIRI",
-            "detector": "MIRIMAGE",
-            "exp_type": "MIR_IMAGE",
-            "pedigree": "GROUND",
-            "author": "D. Law",
-            "model": distortion_transform
-            }
-    f.tree = tree
-    fasdf = f.write_to(outname,all_array_storage='inline')
-    #return fasdf
+
+    dist = DistortionModel()
+    dist.meta.instrument.name = "MIRI"
+    dist.meta.title = "MIRI imager distortion - CDP7B"
+    dist.meta.instrument.detector = "MIRIMAGE"
+    dist.meta.exposure.type = "MIR_IMAGE"
+    dist.meta.exposure.p_exptype = "MIR_IMAGE|MIR_LRS-FIXEDSLIT|MIR_LRS-SLITLESS|"
+    dist.meta.author = "D. Law"
+    dist.meta.pedigree = "GROUND"
+    dist.model = distortion_transform
+    dist.save(outname)
 
 
 def make_references(filename, ref):

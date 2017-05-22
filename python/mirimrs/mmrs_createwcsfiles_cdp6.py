@@ -28,7 +28,7 @@ from numpy.testing import utils
 import mmrs_tools as mmrs_tools
 import drltimer as drltimer
 
-from jwst.datamodels.wcs_ref_models import *
+from jwst.datamodels import *
 
 
 # Function to loop over all 6 MIRI MRS distortion files
@@ -170,7 +170,7 @@ def create_cdp6_onereference(fname, ref):
 def create_regions_file(slices, detector, band, channel, name, author, useafter, description, outformat):
     model = RegionsModel()
     model = create_reffile_header(model, detector, band, channel, author, useafter,
-                                 description)
+                                  description)
     model.meta.filename = name
     model.regions = slices
     #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
@@ -203,14 +203,15 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
     # Split the provided data vector into its pieces
     adata, bdata, xdata, ydata, bzero, bdel, ab_v23, v23_ab = data
 
-    dist.slices = list(xdata.keys())
-    xd = [xdata[sl] for sl in xdata]
+    slices = list(xdata.keys())
+    dist.slices = slices
+    xd = [xdata[sl] for sl in slices]
     dist.x_model = xd
-    yd = [ydata[sl] for sl in ydata]
+    yd = [ydata[sl] for sl in slices]
     dist.y_model = yd
-    ad = [adata[sl] for sl in adata]
+    ad = [adata[sl] for sl in slices]
     dist.alpha_model = ad
-    bd = [bdata[sl] for sl in bdata]
+    bd = [bdata[sl] for sl in slices]
     dist.beta_model = bd
     dist.bzero = {'channel_band': list(bzero.keys()), 'beta_zero': list(bzero.values())}
     dist.bdel = {'channel_band': list(bdel.keys()), 'delta_beta': list(bdel.values())}
@@ -262,15 +263,15 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
 
     # Since the matrix transforms need a 4-element input we need a mapping
     # to go from (0,1) to (0,1,0,1)
-    map=models.Mapping((0, 1, 0, 1),n_inputs=2)
+    mapping = models.Mapping((0, 1, 0, 1), n_inputs=2)
 
     # Put the mappings all together
-    ch1 = map | ch1_v2 & ch1_v3 | xanyan_to_v2v3
-    ch2 = map | ch2_v2 & ch2_v3 | xanyan_to_v2v3
+    ch1 = mapping | ch1_v2 & ch1_v3 | xanyan_to_v2v3
+    ch2 = mapping | ch2_v2 & ch2_v3 | xanyan_to_v2v3
 
     # And make the inverse mapping
-    ch1.inverse =  xanyan_to_v2v3.inverse | map | ch1_a & ch1_b
-    ch2.inverse =  xanyan_to_v2v3.inverse | map | ch2_a & ch2_b
+    ch1.inverse =  xanyan_to_v2v3.inverse | mapping | ch1_a & ch1_b
+    ch2.inverse =  xanyan_to_v2v3.inverse | mapping | ch2_a & ch2_b
 
     #pdb.set_trace()
     # save to file
@@ -281,15 +282,20 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
 
 
 def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, useafter, description, outformat):
-    model = SpecwcsModel()
-    model = create_reffile_header(model, detector, band, channel, author, useafter,
+    spec = SpecwcsModel()
+    spec = create_reffile_header(spec, detector, band, channel, author, useafter,
                                  description)
-    model.meta.subarray.name = "N/A"
-    model.meta.filename = name
-    model.meta.model = lmodel
+
+    spec.meta.subarray.name = "N/A"
+    spec.meta.filename = name
+
+    slices = list(lmodel.keys())
+    spec.slices = slices
+    lam_data = [lmodel[sl] for sl in slices]
+    spec.model = lam_data
 
     #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
-    model.save(name)
+    spec.save(name)
 
 # Create the x,y to a,b models
 def create_poly_models(data, channel, coeff_names, name):
@@ -395,7 +401,7 @@ def create_wavelengthrange_file(name, detector, author, useafter, description, o
     model.meta.filename = name
     model.meta.author = ''
     model.meta.instrument.detector = "N/A"
-    model.channels = channels
+    model.waverange_selector = channels
     wr = [wavelengthrange[ch] for ch in channels]
     model.wavelengthrange = wr
     model.meta.wavelength_units = u.micron
