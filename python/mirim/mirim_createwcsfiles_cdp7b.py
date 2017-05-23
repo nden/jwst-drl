@@ -116,7 +116,7 @@ def make_filter_offset(distfile, outname):
 
     d = []
     for i in data:
-        d.append({'name':i[0],'column_offset': i[1], 'row_offset': i[2]} )
+        d.append({'name':i[0],'column_offset': -i[1], 'row_offset': -i[2]} )
 
     model = FilteroffsetModel()
     model.meta.title = "MIRI imager filter offset - CDP7B"
