@@ -32,6 +32,9 @@
 ;
 ;   Note that both input and output can be vectors of numbers.
 ;
+;   Note that while this IDL code assumes x,y are 0-indexed science
+;   pixels, the python code assumes 0-indexed detector pixels
+;
 ; EXAMPLES:
 ;
 ; BUGS:
