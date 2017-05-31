@@ -171,7 +171,7 @@ def create_regions_file(slices, detector, band, channel, name, author, useafter,
     model = RegionsModel()
     model = create_reffile_header(model, detector, band, channel, author, useafter,
                                   description)
-    model.meta.filename = name
+    model.meta.filename = os.path.split(name)[-1]
     model.regions = slices
     #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     model.save(name)
@@ -199,7 +199,7 @@ def create_distortion_file(reftype, detector,  band, channel, channels, data, na
     dist = create_reffile_header(dist, detector, band, channel, author, useafter,
                                  description)
 
-    dist.meta.filename = name
+    dist.meta.filename = os.path.split(name)[-1]
     # Split the provided data vector into its pieces
     adata, bdata, xdata, ydata, bzero, bdel, ab_v23, v23_ab = data
 
@@ -287,7 +287,7 @@ def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, 
                                  description)
 
     spec.meta.subarray.name = "N/A"
-    spec.meta.filename = name
+    spec.meta.filename = os.path.split(name)[-1]
 
     slices = list(lmodel.keys())
     spec.slices = slices
@@ -398,7 +398,7 @@ def create_wavelengthrange_file(name, detector, author, useafter, description, o
 
     model = create_reffile_header(model, detector, band="N/A", channel="N/A", author=author,
                                  useafter=useafter, description=description)
-    model.meta.filename = name
+    model.meta.filename = os.path.split(name)[-1]
     model.meta.author = ''
     model.meta.instrument.detector = "N/A"
     model.waverange_selector = channels
