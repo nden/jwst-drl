@@ -29,6 +29,7 @@ import pdb as pdb
 from numpy.testing import assert_allclose
 from astropy.io import fits
 from astropy.modeling import models
+from astropy import units as u
 from asdf import AsdfFile
 from jwst import datamodels
 from jwst.assign_wcs import miri
@@ -125,6 +126,8 @@ def make_filter_offset(distfile, outname):
     model.meta.pedigree = "GROUND"
     model.meta.exposure.type = "MIR_IMAGE"
     model.meta.author = "D. Law"
+    model.meta.description = "CDP7B delivery - new file structure"
+    model.meta.useafter = "2017-05-01T00:00:00"
 
     for item in data:
         model.filters = d
@@ -237,14 +240,20 @@ def make_distortion(distfile, outname):
     fdist.close()
 
     dist = DistortionModel()
+    dist.meta.input_units = u.pix
+    dist.meta.output_units = u.arcsec
     dist.meta.instrument.name = "MIRI"
     dist.meta.title = "MIRI imager distortion - CDP7B"
     dist.meta.instrument.detector = "MIRIMAGE"
+    dist.meta.instrument.band = "N/A"
+    dist.meta.instrument.channel = "N/A"
     dist.meta.exposure.type = "MIR_IMAGE"
     dist.meta.exposure.p_exptype = "MIR_IMAGE|MIR_LRS-FIXEDSLIT|MIR_LRS-SLITLESS|"
     dist.meta.author = "D. Law"
     dist.meta.pedigree = "GROUND"
     dist.model = distortion_transform
+    dist.meta.description = "CDP7B delivery - new reference file structure and new bounding box"
+    dist.meta.useafter = "2017-05-01T00:00:00"
     dist.save(outname)
 
 
