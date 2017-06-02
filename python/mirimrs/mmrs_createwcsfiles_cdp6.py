@@ -28,6 +28,9 @@ from numpy.testing import utils
 import mmrs_tools as mmrs_tools
 import drltimer as drltimer
 
+from asdf.tags.core import Software, HistoryEntry
+import datetime
+
 from jwst.datamodels import *
 
 
@@ -149,7 +152,7 @@ def create_cdp6_onereference(fname, ref):
     bmodel2 = create_beta_models(b0_ch2, bdel_ch2, int(channel[1]), len(alpha2))
 
     bmodel1.update(bmodel2)
-    useafter = "2017-05-01T00:00:00"
+    useafter = "2000-01-01T00:00:00"
     author =  'Adrian M. Glauser, David R. Law'  #Author of the data
     description = 'MIRI MRS CDP6 distortion reference data.'
 
@@ -173,7 +176,6 @@ def create_regions_file(slices, detector, band, channel, name, author, useafter,
                                   description)
     model.meta.filename = os.path.split(name)[-1]
     model.regions = slices
-    #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     model.save(name)
 
 
@@ -188,6 +190,12 @@ def create_reffile_header(model, detector, band, channel, author, useafter,
     model.meta.instrument.channel = channel
     model.meta.instrument.band = band
     model.meta.exposure.type = "MIR_MRS"
+
+    entry = HistoryEntry({'description': "DOCUMENT: MIRI-TN-00001-ETH_Iss2-1_Calibrationproduct_MRS_d2c.  New files created from CDP-6 with updated file structure and V2/V3 instead of XAN/YAN", 'time': datetime.datetime.utcnow()})
+    software = Software({'name': 'jwst-drl', 'author': 'D.Law', 
+                         'homepage': 'https://github.com/drlaw1558/jwst-drl', 'version': "master"})
+    entry['software'] = software
+    model.history = [entry]
 
     return model
 
@@ -296,7 +304,6 @@ def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, 
     lam_data = [lmodel[sl] for sl in slices]
     spec.model = lam_data
 
-    #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     spec.save(name)
 
 
@@ -402,13 +409,11 @@ def create_wavelengthrange_file(name, detector, author, useafter, description, o
     model = create_reffile_header(model, detector, band="N/A", channel="N/A", author=author,
                                  useafter=useafter, description=description)
     model.meta.filename = os.path.split(name)[-1]
-    model.meta.author = 'Adrian Glauser, D. Law'
     model.meta.instrument.detector = "N/A"
     model.waverange_selector = channels
     wr = [wavelengthrange[ch] for ch in channels]
     model.wavelengthrange = wr
     model.meta.wavelength_units = u.micron
-    #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     model.save(name)
 
 # Function to test the implemented transforms and ASDF files

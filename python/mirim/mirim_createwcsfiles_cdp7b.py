@@ -36,6 +36,8 @@ from jwst.assign_wcs import miri
 
 import mirim_tools as mirim_tools
 from jwst.datamodels import DistortionModel, FilteroffsetModel
+from asdf.tags.core import Software, HistoryEntry
+import datetime
 
 # Print full arrays for debugging
 np.set_printoptions(threshold=np.inf)
@@ -120,14 +122,11 @@ def make_filter_offset(distfile, outname):
         d.append({'name':i[0],'column_offset': -i[1], 'row_offset': -i[2]} )
 
     model = FilteroffsetModel()
+    # Add general metadata
+    model = create_reffile_header(model)
+    # Add file-specific metadata
     model.meta.title = "MIRI imager filter offset - CDP7B"
-    model.meta.instrument.name = "MIRI"
-    model.meta.instrument.detector = "MIRIMAGE"
-    model.meta.pedigree = "GROUND"
-    model.meta.exposure.type = "MIR_IMAGE"
-    model.meta.author = "D. Law"
     model.meta.description = "CDP7B delivery - new file structure"
-    model.meta.useafter = "2017-05-01T00:00:00"
 
     for item in data:
         model.filters = d
@@ -240,22 +239,36 @@ def make_distortion(distfile, outname):
     fdist.close()
 
     dist = DistortionModel()
+    # Add general metadata
+    dist = create_reffile_header(dist)
+    # Add file-specific metadata
+    dist.model = distortion_transform
     dist.meta.input_units = u.pix
     dist.meta.output_units = u.arcsec
-    dist.meta.instrument.name = "MIRI"
     dist.meta.title = "MIRI imager distortion - CDP7B"
-    dist.meta.instrument.detector = "MIRIMAGE"
-    dist.meta.instrument.band = "N/A"
-    dist.meta.instrument.channel = "N/A"
-    dist.meta.exposure.type = "MIR_IMAGE"
-    dist.meta.exposure.p_exptype = "MIR_IMAGE|MIR_LRS-FIXEDSLIT|MIR_LRS-SLITLESS|"
-    dist.meta.author = "D. Law"
-    dist.meta.pedigree = "GROUND"
-    dist.model = distortion_transform
     dist.meta.description = "CDP7B delivery - new reference file structure and new bounding box"
-    dist.meta.useafter = "2017-05-01T00:00:00"
+
     dist.save(outname)
 
+def create_reffile_header(model):
+
+    model.meta.instrument.name = "MIRI"
+    model.meta.instrument.detector = "MIRIMAGE"
+    model.meta.instrument.band = "N/A"
+    model.meta.instrument.channel = "N/A"
+    model.meta.exposure.type = "MIR_IMAGE"
+    model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_LRS-FIXEDSLIT|MIR_LRS-SLITLESS|"
+    model.meta.author = "Alistair Glasse, David R. Law"
+    model.meta.pedigree = "GROUND"
+    model.meta.useafter = "2000-01-01T00:00:00"
+
+    entry = HistoryEntry({'description': "New version created from CDP-7b with updated file structure", 'time': datetime.datetime.utcnow()})
+    software = Software({'name': 'jwst-drl', 'author': 'D.Law', 
+                         'homepage': 'https://github.com/drlaw1558/jwst-drl', 'version': "master"})
+    entry['software'] = software
+    model.history = [entry]
+
+    return model
 
 def make_references(filename, ref):
     """
