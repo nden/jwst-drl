@@ -149,7 +149,7 @@ def create_cdp6_onereference(fname, ref):
     bmodel2 = create_beta_models(b0_ch2, bdel_ch2, int(channel[1]), len(alpha2))
 
     bmodel1.update(bmodel2)
-    useafter = "2000-01-01T00:00:00"
+    useafter = "2017-05-01T00:00:00"
     author =  'Adrian M. Glauser, David R. Law'  #Author of the data
     description = 'MIRI MRS CDP6 distortion reference data.'
 
@@ -195,7 +195,7 @@ def create_reffile_header(model, detector, band, channel, author, useafter,
 def create_distortion_file(reftype, detector,  band, channel, channels, data, name, author,
                            useafter, description, outformat):
     dist = DistortionMRSModel()
-    description = 'MIRI MRS Distortion Maps'
+    description = 'MIRI MRS Distortion Maps - build 7.1'
     dist = create_reffile_header(dist, detector, band, channel, author, useafter,
                                  description)
 
@@ -288,6 +288,8 @@ def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, 
 
     spec.meta.subarray.name = "N/A"
     spec.meta.filename = os.path.split(name)[-1]
+    spec.meta.input_units = u.pix
+    spec.meta.output_units = u.micron
 
     slices = list(lmodel.keys())
     spec.slices = slices
@@ -296,6 +298,7 @@ def create_specwcs_file(reftype, detector, band, channel, lmodel, name, author, 
 
     #f.add_history_entry("DOCUMENT: MIRI-TN-00001-ETH; SOFTWARE: polyd2c_CDP5.pro; DATA USED: Data set of: - FM Test Campaign relevant to MRS-OPT-01, MRS-OPT-02, MRS-OPT-04, MRS-OPT-08; - CV1 Test Campaign relevant to MRS-OPT-02; - CV2 Test Campaign relevant to MRS-OPT-02; - Laboratory measurement of SPO; ============ DIFFERENCES: - New file structure: Change of Extention names and Table Column Headers.; - Replaced V2/V3 with XAN/YAN;")
     spec.save(name)
+
 
 # Create the x,y to a,b models
 def create_poly_models(data, channel, coeff_names, name):
@@ -378,8 +381,8 @@ def create_beta_models(b0, bdel, channel, nslices):
 def create_wavelengthrange_file(name, detector, author, useafter, description, outformat):
     model = WavelengthrangeModel()
 
-    # Relaxing the range to match the distortion. The table above
-    # comes from the report and is "as designed".
+    # Relaxing the range to match the distortion. The original table
+    # comes from the MIRI IDT report and is "as designed".
     wavelengthrange = {'1SHORT': (4.68, 5.97),
                         '1MEDIUM': (5.24, 6.87),
                         '1LONG': (6.2, 7.90),
@@ -399,7 +402,7 @@ def create_wavelengthrange_file(name, detector, author, useafter, description, o
     model = create_reffile_header(model, detector, band="N/A", channel="N/A", author=author,
                                  useafter=useafter, description=description)
     model.meta.filename = os.path.split(name)[-1]
-    model.meta.author = ''
+    model.meta.author = 'Adrian Glauser, D. Law'
     model.meta.instrument.detector = "N/A"
     model.waverange_selector = channels
     wr = [wavelengthrange[ch] for ch in channels]
