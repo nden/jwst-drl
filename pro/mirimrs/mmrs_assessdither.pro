@@ -4,6 +4,10 @@
 ; overridden (wave=) to run at arbitrary wavelength.  It can also be
 ; overridden to run with specified alpha, beta moves (da=, db=)
 ; as offsets from the 0,0 midpoint in 1A.
+;
+; dithers are 1-indexed
+;
+; Example: mmrs_assessdither,'1A',[1,2,3,4]
 
 pro mmrs_assessdither,channel,dith,wave=wave,da=da,db=db,outfile=outfile,rootdir=rootdir,siafdir=siafdir
 
@@ -171,6 +175,28 @@ if (~keyword_set(outfile)) then outfile='covmap.fits'
 
 writefits,outfile,covmap
 
+
+; Print out some metrics
+; Total coverage area
+temp=covmap[*,*,0]
+indx=where(temp ne 0,nindx)
+print,'Coverage area: ',nindx*dtheta*dtheta,' arcsec^2'
+offsets=sqrt((dra-dra[0])^2+(ddec-ddec[0])^2)
+maxoffset=max(offsets)*3600.
+if (channel eq '1A') then psf=0.31
+if (channel eq '1B') then psf=0.31
+if (channel eq '1C') then psf=0.31
+if (channel eq '2A') then psf=0.31*(8.90/8.0)
+if (channel eq '2B') then psf=0.31*(10.28/8.0)
+if (channel eq '2C') then psf=0.31*(11.87/8.0)
+if (channel eq '3A') then psf=0.31*(13.67/8.0)
+if (channel eq '3B') then psf=0.31*(15.80/8.0)
+if (channel eq '3C') then psf=0.31*(18.24/8.0)
+if (channel eq '4A') then psf=0.31*(21.10/8.0)
+if (channel eq '4B') then psf=0.31*(24.72/8.0)
+if (channel eq '4C') then psf=0.31*(28.82/8.0)
+print,'Max offset (arcsec): ',maxoffset
+print,'Max offset (FWHM): ',maxoffset/psf
 
 return
 end
