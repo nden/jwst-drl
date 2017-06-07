@@ -8,51 +8,48 @@ from asdf import AsdfFile
 from jwst import datamodels
 from jwst.assign_wcs import miri
 
-# Convenience function to set default CRDS reference files from
-# jwst/trunk for CDP-6 for a given channel/band
-def setreffiles_cdp6(channel):
+########################################################################################
+# General convenience tools
+########################################################################################
+
+# Convenience function to set default most-recent CRDS reference files from
+# jwst-drl/trunk/CRDS/
+# Last updated for CDP-6
+def setreffiles_default(channel):
     def_rootdir=os.path.expandvars('$JWSTTOOLS_DIR')
 
+    wavefile=def_rootdir+'/CRDS/jwst_miri_wavelengthrange_0003.asdf'
+
     # Channel should be of the form (e.g.) '1A', '3C', etc
+    # See https://jwst-crds.stsci.edu//display_result/52cef902-ad77-4792-9964-d26a0a8a96a8
     if ((channel is '1A')or(channel is '2A')):
-       distfile=def_rootdir+'/CRDS/jwst_miri_mrs12A_distortion_cdp6.asdf'
-       regfile=def_rootdir+'/CRDS/jwst_miri_mrs12A_regions_cdp6.asdf'
-       specfile=def_rootdir+'/CRDS/jwst_miri_mrs12A_specwcs_cdp6.asdf'
-       wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-       refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+       distfile=def_rootdir+'/CRDS/jwst_miri_distortion_0021.asdf'
+       regfile=def_rootdir+'/CRDS/jwst_miri_regions_0016.asdf'
+       specfile=def_rootdir+'/CRDS/jwst_miri_specwcs_0015.asdf'
     elif ((channel is '3A')or(channel is '4A')):
-       distfile=def_rootdir+'/CRDS/jwst_miri_mrs34A_distortion_cdp6.asdf'
-       regfile=def_rootdir+'/CRDS/jwst_miri_mrs34A_regions_cdp6.asdf'
-       specfile=def_rootdir+'/CRDS/jwst_miri_mrs34A_specwcs_cdp6.asdf'
-       wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-       refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+       distfile=def_rootdir+'/CRDS/jwst_miri_distortion_0024.asdf'
+       regfile=def_rootdir+'/CRDS/jwst_miri_regions_0013.asdf'
+       specfile=def_rootdir+'/CRDS/jwst_miri_specwcs_0017.asdf'
     elif ((channel is '1B')or(channel is '2B')):
-       distfile=def_rootdir+'/CRDS/jwst_miri_mrs12B_distortion_cdp6.asdf'
-       regfile=def_rootdir+'/CRDS/jwst_miri_mrs12B_regions_cdp6.asdf'
-       specfile=def_rootdir+'/CRDS/jwst_miri_mrs12B_specwcs_cdp6.asdf'
-       wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-       refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+       distfile=def_rootdir+'/CRDS/jwst_miri_distortion_0022.asdf'
+       regfile=def_rootdir+'/CRDS/jwst_miri_regions_0015.asdf'
+       specfile=def_rootdir+'/CRDS/jwst_miri_specwcs_0013.asdf'
     elif ((channel is '3B')or(channel is '4B')):
-       distfile=def_rootdir+'/CRDS/jwst_miri_mrs34B_distortion_cdp6.asdf'
-       regfile=def_rootdir+'/CRDS/jwst_miri_mrs34B_regions_cdp6.asdf'
-       specfile=def_rootdir+'/CRDS/jwst_miri_mrs34B_specwcs_cdp6.asdf'
-       wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-       refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+       distfile=def_rootdir+'/CRDS/jwst_miri_distortion_0026.asdf'
+       regfile=def_rootdir+'/CRDS/jwst_miri_regions_0014.asdf'
+       specfile=def_rootdir+'/CRDS/jwst_miri_specwcs_0018.asdf'
     elif ((channel is '1C')or(channel is '2C')):
-       distfile=def_rootdir+'/CRDS/jwst_miri_mrs12C_distortion_cdp6.asdf'
-       regfile=def_rootdir+'/CRDS/jwst_miri_mrs12C_regions_cdp6.asdf'
-       specfile=def_rootdir+'/CRDS/jwst_miri_mrs12C_specwcs_cdp6.asdf'
-       wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-       refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+       distfile=def_rootdir+'/CRDS/jwst_miri_distortion_0025.asdf'
+       regfile=def_rootdir+'/CRDS/jwst_miri_regions_0018.asdf'
+       specfile=def_rootdir+'/CRDS/jwst_miri_specwcs_0014.asdf'
     elif ((channel is '3C')or(channel is '4C')):
-       distfile=def_rootdir+'/CRDS/jwst_miri_mrs34C_distortion_cdp6.asdf'
-       regfile=def_rootdir+'/CRDS/jwst_miri_mrs134_regions_cdp6.asdf'
-       specfile=def_rootdir+'/CRDS/jwst_miri_mrs34C_specwcs_cdp6.asdf'
-       wavefile=def_rootdir+'/CRDS/jwst_miri_mrs_wavelengthrange_cdp6.asdf'
-       refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'v2v3':v2v3file, 'wavelengthrange':wavefile}
+       distfile=def_rootdir+'/CRDS/jwst_miri_distortion_0027.asdf'
+       regfile=def_rootdir+'/CRDS/jwst_miri_regions_0017.asdf'
+       specfile=def_rootdir+'/CRDS/jwst_miri_specwcs_0016.asdf'
     else:
        print 'Failure!'
 
+    refs={'distortion': distfile, 'regions':regfile, 'specwcs':specfile, 'wavelengthrange':wavefile}
     return refs
 
 # Convenience function to turn '1A' type name into '12' and 'SHORT' type names
@@ -158,7 +155,7 @@ def xytoabl(channel,**kwargs):
       therefs=kwargs['refs']
     # Otherwise use default reference files
     else:
-      therefs=setreffiles_cdp6(channel)
+      therefs=setreffiles_default(channel)
 
     distortion = miri.detector_to_abl(input_model, therefs)
     # Return the distortion object that can then be queried
@@ -184,7 +181,7 @@ def abtov2v3(channel,**kwargs):
       therefs=kwargs['refs']
     # Otherwise use default reference files
     else:
-      therefs=setreffiles_cdp6(channel)
+      therefs=setreffiles_default(channel)
 
     # The pipeline transform actually uses the triple
     # (alpha,beta,lambda) -> (v2,v3,lambda)
@@ -206,6 +203,22 @@ def abtov2v3(channel,**kwargs):
     # Return the distortion object that can then be queried
     return allmap
 
+# Convert v2,v3 in arcsec to xan,yan in arcmin
+def v2v3_to_xanyan(v2,v3):
+    xan=v2/60.
+    yan=-(v3+7.8*60.)/60.
+    return xan,yan
+
+# Convert xan,yan in arcmin to v2,v3 in arcsec
+def xanyan_to_v2v3(xan,yan):
+    v2=xan*60.
+    v3=(-yan-7.8)*60.
+    return v2,v3
+
+########################################################################################
+# CDP-specific tools
+########################################################################################
+
 # Old test code from cdp5
 def xytoab_cdp5test(refs):
     # Construct the reference data model in general JWST imager type
@@ -219,16 +232,4 @@ def xytoab_cdp5test(refs):
     # Return the distortion object that can then be queried
     return distortion
 
-
-# Convert v2,v3 in arcsec to xan,yan in arcmin
-def v2v3_to_xanyan(v2,v3):
-    xan=v2/60.
-    yan=-(v3+7.8*60.)/60.
-    return xan,yan
-
-# Convert xan,yan in arcmin to v2,v3 in arcsec
-def xanyan_to_v2v3(xan,yan):
-    v2=xan*60.
-    v3=(-yan-7.8)*60.
-    return v2,v3
 
