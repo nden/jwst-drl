@@ -3,7 +3,10 @@
 ;   mirim_v2v3toxy
 ;
 ; PURPOSE:
-;   Convert JWST v2,v3 locations to MIRI Imager SCA x,y pixel locations
+;   Convert JWST v2,v3 locations to MIRI Imager SCA x,y pixel locations.
+;   Convention is that x,y pixel locations follow the JWST pipeline
+;   convention where the detector has 1032x1024 pixels and (0,0) is
+;   the middle of the lower left detector pixel.
 ;
 ; CALLING SEQUENCE:
 ;   mirim_v2v3toxy,v2,v3,x,y,filter,[refdir=,/xan]
@@ -18,8 +21,8 @@
 ;   /xan   - Specifies that input coordinates are actually xan,yan frame
 ;
 ; OUTPUT:
-;   x       - SCA pixel x coordinate (0 is middle of lower left sci pixel)
-;   y       - SCA pixel y coordinate (0 is middle of lower left sci pixel)
+;   x       - SCA pixel x coordinate (0 is middle of lower left det pixel)
+;   y       - SCA pixel y coordinate (0 is middle of lower left det pixel)
 ;
 ; OPTIONAL OUTPUT:
 ;
@@ -27,7 +30,8 @@
 ;   Works with CDP7b delivery files.  Inverse function is mirim_xytov2v3.
 ;   Based on the IDL example code provided by Alistair Glasse in
 ;   CDP-7b.  CDP7b newly defined origin such that (0,0) is the middle
-;   of the lower-left light sensitive pixel.
+;   of the lower-left light sensitive pixel, therefore also need to transform
+;   between this science frame and detector frame.
 ;
 ;   Note that both input and output can be vectors of numbers.
 ;
@@ -43,6 +47,8 @@
 ;   08-Sep-2016  Written by David Law (dlaw@stsci.edu)
 ;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;   20-Mar-2017  Update to CDP-7b
+;   07-Jun-2017  Update to use x,y in 0-indexed detector frame to
+;                match python code
 ;-
 ;------------------------------------------------------------------------------
 
@@ -125,8 +131,9 @@ endif
 SCA[*,0] += boresight[indx].COL_OFFSET
 SCA[*,1] += boresight[indx].ROW_OFFSET
 
-; Output vectors
-xpixel=SCA[*,0]
+; Output vectors, also shifting from science frame
+; to detector frame
+xpixel=SCA[*,0]+4
 ypixel=SCA[*,1]
 
 return

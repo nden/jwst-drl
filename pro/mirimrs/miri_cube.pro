@@ -56,6 +56,8 @@
 ;   Dec 2016:     Update for cube testing with Jane
 ;   07-Mar-2017   Ported to miri_cube from cv3cube and simcube.  Update to 1-index
 ;                 distortion mapping.
+;   07-Jun-2017:  Update to use x,y in 0-indexed detector frame to
+;                match python code
 ;   
 ;-
 ;------------------------------------------------------------------------------
@@ -222,8 +224,8 @@ nx=xmax-xmin+1
 basex=rebin(findgen(nx)+xmin,[nx,ny])
 basey=transpose(rebin(findgen(ny),[ny,nx]))
 
-; Convert to base alpha,beta,lambda using 1-indexed values
-mmrs_xytoabl,basex+1,basey+1,basealpha,basebeta,baselambda,band,slicenum=slicenum
+; Convert to base alpha,beta,lambda
+mmrs_xytoabl,basex,basey,basealpha,basebeta,baselambda,band,slicenum=slicenum
 
 ; Crop to only pixels on a real slice
 index0=where(slicenum gt 0,nindex0)

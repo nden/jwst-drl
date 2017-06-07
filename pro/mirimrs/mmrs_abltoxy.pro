@@ -3,7 +3,10 @@
 ;   mmrs_abltoxy
 ;
 ; PURPOSE:
-;   Convert MRS local coordinates to MRS detector coordinates
+;   Convert MRS local coordinates to MRS detector coordinates.
+;   Convention is that x,y pixel locations follow the JWST pipeline
+;   convention where the detector has 1032x1024 pixels and (0,0) is
+;   the middle of the lower left detector pixel.
 ;
 ; CALLING SEQUENCE:
 ;   mmrs_abltoxy,a,b,l,x,y,channel,[phase=,slicenum=,slicename=,refdir=,/trim]
@@ -20,8 +23,8 @@
 
 ;
 ; OUTPUT:
-;   x      - X coordinate in 1-indexed pixels
-;   y      - Y coordinate in 1-indexed pixels
+;   x      - X coordinate in 0-indexed pixels
+;   y      - Y coordinate in 0-indexed pixels
 ;
 ; OPTIONAL OUTPUT:
 ;   slicenum - Slice number (e.g., 11)
@@ -32,6 +35,12 @@
 ;   Works with CDP6 delivery files.  Inverse function is mmrs_xytoabl.pro
 ;   Not all input a,b,l can map to x,y because some may fall outside
 ;   the FOV.  x,y for these are set to -999.
+;
+;   CDP transforms provided by A. Glauser assume a 1-indexed detector
+;   frame convention, whereas this code uses the JWST pipeline
+;   convention that (0,0) is the middle of the lower-left detector pixel.
+;   Therefore this code also does the 1- to 0-indexed transform after
+;   calling the Glauser distortions.
 ;
 ; EXAMPLES:
 ;
@@ -45,6 +54,8 @@
 ;
 ; REVISION HISTORY:
 ;   09-Feb-2017  Written by David Law (dlaw@stsci.edu)
+;   07-Jun-2017  Update to use x,y in 0-indexed detector frame to
+;                match python code
 ;-
 ;------------------------------------------------------------------------------
 
@@ -172,6 +183,10 @@ if (keyword_set(trim)) then begin
   y=y[index0]
   phase=phase[index0,*]
 endif
+
+; Transform from 1-indexed to 0-indexed values
+x=x-1
+y=y-1
 
 return
 end

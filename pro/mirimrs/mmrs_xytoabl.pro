@@ -3,14 +3,17 @@
 ;   mmrs_xytoabl
 ;
 ; PURPOSE:
-;   Convert MRS detector coordinates to MRS local alpha,beta coordinates
+;   Convert MRS detector coordinates to MRS local alpha,beta coordinates.
+;   Convention is that x,y pixel locations follow the JWST pipeline
+;   convention where the detector has 1032x1024 pixels and (0,0) is
+;   the middle of the lower left detector pixel.
 ;
 ; CALLING SEQUENCE:
 ;   mmrs_xytoabl,x,y,a,b,l,channel,[slicenum=,slicename=,refdir=]
 ;
 ; INPUTS:
-;   x      - X coordinate in 1-indexed pixels
-;   y      - Y coordinate in 1-indexed pixels
+;   x      - X coordinate in 0-indexed pixels
+;   y      - Y coordinate in 0-indexed pixels
 ;   channel - channel name (e.g, '1A')
 ;
 ; OPTIONAL INPUTS:
@@ -31,6 +34,12 @@
 ;   Not all input x,y can actually map to alpha,beta because some pixels
 ;   fall between slices.  alpha,beta,lambda for these are set to -999.
 ;
+;   CDP transforms provided by A. Glauser assume a 1-indexed detector
+;   frame convention, whereas this code uses the JWST pipeline
+;   convention that (0,0) is the middle of the lower-left detector pixel.
+;   Therefore this code also does the 0- to 1-indexed transform prior
+;   to calling the Glauser distortions.
+;
 ; EXAMPLES:
 ;
 ; BUGS:
@@ -43,6 +52,8 @@
 ;   30-July-2015  Written by David Law (dlaw@stsci.edu)
 ;   30-Sep-2015   Include lambda axis (D. Law)
 ;   24-Jan-2016   Update extension names for CDP5 (D. Law)
+;   07-Jun-2017  Update to use x,y in 0-indexed detector frame to
+;                match python code
 ;-
 ;------------------------------------------------------------------------------
 
@@ -58,9 +69,9 @@ if (~keyword_set(refdir)) then $
 ch=fix(strmid(channel,0,1))
 sband=strmid(channel,1,1)
 
-; Ensure we're not using integer inputs
-xdbl=double(x)
-ydbl=double(y)
+; Transform from 0-indexed to 1-indexed pixels and ensure we're not using integer inputs
+xdbl=double(x)+1
+ydbl=double(y)+1
 
 ; Determine input reference FITS file
 case channel of

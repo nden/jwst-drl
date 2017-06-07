@@ -3,14 +3,17 @@
 ;   mirim_xytov2v3
 ;
 ; PURPOSE:
-;   Convert MIRI imager SCA x,y pixel locations to JWST v2,v3 locations
+;   Convert MIRI imager SCA x,y pixel locations to JWST v2,v3 locations.
+;   Convention is that x,y pixel locations follow the JWST pipeline
+;   convention where the detector has 1032x1024 pixels and (0,0) is
+;   the middle of the lower left detector pixel.
 ;
 ; CALLING SEQUENCE:
 ;   mirim_xytov2v3,x,y,v2,v3,filter,[refdir=,xan=xan,yan=yan]
 ;
 ; INPUTS:
-;   x       - SCA pixel x coordinate (0 is middle of lower left sci pixel)
-;   y       - SCA pixel y coordinate (0 is middle of lower left sci pixel)
+;   x       - SCA pixel x coordinate (0 is middle of lower left det pixel)
+;   y       - SCA pixel y coordinate (0 is middle of lower left det pixel)
 ;   filter - Filter name (e.g., 'F770W')
 ;
 ; OPTIONAL INPUTS:
@@ -28,12 +31,10 @@
 ;   Works with CDP7b delivery files.  Inverse function is mirim_v2v3toxy
 ;   Based on the IDL example code provided by Alistair Glasse in
 ;   CDP-7b.  CDP7b newly defined origin such that (0,0) is the middle
-;   of the lower-left light sensitive pixel.
+;   of the lower-left light sensitive pixel, therefore also need to transform
+;   between this science frame and detector frame.
 ;
 ;   Note that both input and output can be vectors of numbers.
-;
-;   Note that while this IDL code assumes x,y are 0-indexed science
-;   pixels, the python code assumes 0-indexed detector pixels
 ;
 ; EXAMPLES:
 ;
@@ -47,6 +48,8 @@
 ;   08-Sep-2016  Written by David Law (dlaw@stsci.edu)
 ;   17-Oct-2016  Input/output v2/v3 in arcsec (D. Law)
 ;   20-Mar-2017  Update to CDP-7b
+;   07-Jun-2017  Update to use x,y in 0-indexed detector frame to
+;                match python code
 ;-
 ;------------------------------------------------------------------------------
 
@@ -87,9 +90,10 @@ if (indx eq -1) then begin
   return
 endif
 
-; Transform to SCA pixel position without boresight offsets
+; Transform to SCA pixel position without boresight offsets,
+; also shifting from detector frame to science frame
 SCA = dblarr(npoints,3)
-SCA[*,0]=xpixel-boresight[indx].COL_OFFSET
+SCA[*,0]=xpixel-boresight[indx].COL_OFFSET-4
 SCA[*,1]=ypixel-boresight[indx].ROW_OFFSET
 SCA[*,2]=UnitVec
 
