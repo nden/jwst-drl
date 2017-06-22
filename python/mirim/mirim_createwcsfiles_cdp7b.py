@@ -257,13 +257,13 @@ def create_reffile_header(model):
     model.meta.instrument.band = "N/A"
     model.meta.instrument.channel = "N/A"
     model.meta.exposure.type = "MIR_IMAGE"
-    model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_LRS-FIXEDSLIT|MIR_LRS-SLITLESS|"
+    model.meta.exposure.p_exptype = "MIR_IMAGE|MIR_TACQ|MIR_LYOT|MIR_4QPM|MIR_CORONCAL|MIR_LRS-FIXEDSLIT|MIR_LRS-SLITLESS|"
     model.meta.author = "Alistair Glasse, David R. Law"
     model.meta.pedigree = "GROUND"
     model.meta.useafter = "2000-01-01T00:00:00"
 
     entry = HistoryEntry({'description': "New version created from CDP-7b with updated file structure", 'time': datetime.datetime.utcnow()})
-    software = Software({'name': 'jwst-drl', 'author': 'D.Law', 
+    software = Software({'name': 'jwst-drl', 'author': 'D.Law',
                          'homepage': 'https://github.com/drlaw1558/jwst-drl', 'version': "master"})
     entry['software'] = software
     model.history = [entry]
