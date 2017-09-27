@@ -169,8 +169,8 @@ if ((band eq '1A')or(band eq '1B')or(band eq '1C')) then begin
   ; Output cube parameters
   rlim_arcsec=0.1; in arcseconds
   rlimz_mic=0.004;
-  ps_x=0.17; arcsec
-  ps_y=0.17; arcsec
+  ps_x=0.13; arcsec
+  ps_y=0.13; arcsec
   ps_z=0.002; micron
 endif
 if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
@@ -180,8 +180,8 @@ if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
   xmax=1020; Maximum x pixel
 
   ; Output cube parameters
-  rlim_arcsec=0.15; in arcseconds
-  rlimz_mic=0.004;
+  rlim_arcsec=0.2; in arcseconds
+  rlimz_mic=0.005;
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron

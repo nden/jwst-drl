@@ -82,7 +82,7 @@ circphi=findgen(360)/180.*!PI
 circx=circxcen+rlim[0]*cos(circphi)
 circy=circycen+rlim[1]*sin(circphi)
 oplot,circx,circy,color=250
-;stop
+
 
 
   ; Loop over output image, building the image row by row
