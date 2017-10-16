@@ -168,10 +168,10 @@ if ((band eq '1A')or(band eq '1B')or(band eq '1C')) then begin
 
   ; Output cube parameters
   rlim_arcsec=0.1; in arcseconds
-  rlimz_mic=0.004;
+  rlimz_mic=0.0025;
   ps_x=0.13; arcsec
   ps_y=0.13; arcsec
-  ps_z=0.002; micron
+  ps_z=0.0025; micron
 endif
 if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
   pwidth=0.196; pixel size along alpha in arcsec
@@ -181,7 +181,7 @@ if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
 
   ; Output cube parameters
   rlim_arcsec=0.2; in arcseconds
-  rlimz_mic=0.005;
+  rlimz_mic=0.0025;
   ps_x=0.1; arcsec
   ps_y=0.1; arcsec
   ps_z=0.002; micron
@@ -331,9 +331,15 @@ wrapind=where(abs(master_ra - medra) gt 180.,nwrap)
 if ((nwrap ne 0)and(medra lt 180.)) then master_ra[wrapind]=master_ra[wrapind]-360.
 if ((nwrap ne 0)and(medra ge 180.)) then master_ra[wrapind]=master_ra[wrapind]+360.
 
-; Declare minimum wavelength *before* doing any QA cuts for specific exposures
+; Declare maxima/minima of the cube range *before* doing any QA cuts for specific exposures
 lmin=min(master_lam)
 lmax=max(master_lam)
+ra_min=min(master_ra)
+ra_max=max(master_ra)
+dec_min=min(master_dec)
+dec_max=max(master_dec)
+dec_ave=(dec_min+dec_max)/2.
+ra_ave=(ra_min+ra_max)/2.
 
 ; Crop any pixels with bad DQ flags
 badnum=long64(2)^0+long64(2)^3+long64(2)^9+long64(2)^10+long64(2)^11+long64(2)^14+long64(2)^16
@@ -362,34 +368,31 @@ master_dety=master_dety[index1]
 master_v2=master_v2[index1]
 master_v3=master_v3[index1]
 
-dec_min=min(master_dec)
-dec_max=max(master_dec)
-dec_ave=(dec_min+dec_max)/2.
-ra_min=min(master_ra)
-ra_max=max(master_ra)
-ra_ave=(ra_min+ra_max)/2.
-
 ra_range=(ra_max-ra_min)*3600.*cos(dec_ave*!PI/180.)
 dec_range=(dec_max-dec_min)*3600.
 cube_xsize=ceil(ra_range/ps_x)
 cube_ysize=ceil(dec_range/ps_y)
 
+; Tangent plane projection to xi/eta
 xi_min=3600.*(ra_min-ra_ave)*cos(dec_ave*!PI/180.)
 xi_max=3600.*(ra_max-ra_ave)*cos(dec_ave*!PI/180.)
 eta_min=3600.*(dec_min-dec_ave)
 eta_max=3600.*(dec_max-dec_ave)
 
-xi_min=xi_min - ps_x/2.
-eta_min=eta_min - ps_y/2.
-xi_max=xi_max + ps_x/2.
-eta_max=eta_max + ps_y/2.
-
+; Define cube sizes
 n1a=ceil(abs(xi_min)/ps_x)
 n1b=ceil(abs(xi_max)/ps_x)
 n2a=ceil(abs(eta_min)/ps_y)
 n2b=ceil(abs(eta_max)/ps_y)
 cube_xsize=n1a+n1b
 cube_ysize=n2a+n2b
+
+; Redefine xi/eta minima/maxima to exactly
+; match pixel boundaries
+xi_min = -n1a*ps_x - ps_x/2.
+xi_max = n1b*ps_x + ps_x/2.
+eta_min = -n2a*ps_y - ps_y/2.
+eta_max = n2b*ps_y + ps_y/2.
 
 xi=3600.*(master_ra-ra_ave)*cos(dec_ave*!PI/180.)
 eta=3600.*(master_dec-dec_ave)

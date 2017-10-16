@@ -125,14 +125,7 @@ oplot,circx,circy,color=250
         arr_radius[xmin:xmax]=sqrt(rx^2+replicate(ry^2,nbox))
 
         ; Determine points within the final circular ROI
-;        tocalc=where(arr_radius le rlim[0],ncalc)
-
-      ; Square box ROI for consistency with Jane
-        temp17x=arr_radius
-        temp17y=arr_radius
-        temp17x[xmin:xmax]=abs(rx)
-        temp17y[xmin:xmax]=abs(replicate(ry,nbox))
-        tocalc=where((temp17x le rlim[0])and(temp17y le rlim[0]),ncalc)
+        tocalc=where(arr_radius le rlim[0],ncalc)
 
         ; Squashed radii for weights
         srx=rx/xsquash
