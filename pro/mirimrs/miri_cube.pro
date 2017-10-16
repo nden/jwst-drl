@@ -180,11 +180,11 @@ if ((band eq '2A')or(band eq '2B')or(band eq '2C')) then begin
   xmax=1020; Maximum x pixel
 
   ; Output cube parameters
-  rlim_arcsec=0.2; in arcseconds
-  rlimz_mic=0.0025;
-  ps_x=0.1; arcsec
-  ps_y=0.1; arcsec
-  ps_z=0.002; micron
+  rlim_arcsec=0.1; in arcseconds
+  rlimz_mic=0.004;
+  ps_x=0.13; arcsec
+  ps_y=0.13; arcsec
+  ps_z=0.004; micron
 endif
 if ((band eq '3A')or(band eq '3B')or(band eq '3C')) then begin
   pwidth=0.245; pixel size along alpha in arcsec
@@ -324,6 +324,14 @@ for i=0,nfiles-1 do begin
   master_v3[i*nindex0:(i+1)*nindex0-1]=basev3
 endfor
 
+;hack
+;newcen0=0.;0.005d *15. / 3600.
+;newcen1=0.;0.14d / 3600.
+;rad=sqrt((master_ra-newcen0)^2+(master_dec-newcen1)^2)*3600.
+;newflux=1./(rad)
+;master_flux=newflux
+;stop
+
 ; Safety case; deal with 0-360 range to ensure no problems
 ; around ra=0 with coordinate wraparound
 medra=median(master_ra)
@@ -367,11 +375,6 @@ master_detx=master_detx[index1]
 master_dety=master_dety[index1]
 master_v2=master_v2[index1]
 master_v3=master_v3[index1]
-
-ra_range=(ra_max-ra_min)*3600.*cos(dec_ave*!PI/180.)
-dec_range=(dec_max-dec_min)*3600.
-cube_xsize=ceil(ra_range/ps_x)
-cube_ysize=ceil(dec_range/ps_y)
 
 ; Tangent plane projection to xi/eta
 xi_min=3600.*(ra_min-ra_ave)*cos(dec_ave*!PI/180.)
@@ -459,7 +462,9 @@ mkhdr,imhdr,im
 cdarr=dblarr(2,2)
 cdarr[0,0]=2.77778e-4*ps_x
 cdarr[1,1]=2.77778e-4*ps_y
-make_astr,astr,cd=cdarr,crpix=[xcen,ycen],crval=[racen,decen]
+; Make astrometry solution, don't forget to put xcen/ycen in
+; 1-indexed FITS convention
+make_astr,astr,cd=cdarr,crpix=[xcen+1,ycen+1],crval=[racen,decen]
 putast,imhdr,astr
 writefits,outslice,im,imhdr
 
