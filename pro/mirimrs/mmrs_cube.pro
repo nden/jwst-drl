@@ -65,6 +65,8 @@ for k=0,thisdim_out[2]-1 do begin
   ; First pass cut: trim to only stuff within rlim of this z location
   indexk=where(abs(z-arr_zcoord[k]-0.5) le rlim[2],nindexk)
 
+  ; If nothing makes the cut, then do nothing.  Otherwise build the slice
+  if (nindexk gt 0) then begin
   tempx=x[indexk]
   tempy=y[indexk]
   tempz=z[indexk]
@@ -74,14 +76,14 @@ for k=0,thisdim_out[2]-1 do begin
   temp_dety=dety[indexk]
   temp_detlam=detlam[indexk]
 
-; QA plot
-plot,tempx,tempy,psym=1
-circxcen=median(tempx)
-circycen=median(tempy)
-circphi=findgen(360)/180.*!PI
-circx=circxcen+rlim[0]*cos(circphi)
-circy=circycen+rlim[1]*sin(circphi)
-oplot,circx,circy,color=250
+  ; QA plot
+  plot,[tempx],[tempy],psym=1
+  circxcen=median(tempx)
+  circycen=median(tempy)
+  circphi=findgen(360)/180.*!PI
+  circx=circxcen+rlim[0]*cos(circphi)
+  circy=circycen+rlim[1]*sin(circphi)
+  oplot,circx,circy,color=250
 
 
 
@@ -205,9 +207,11 @@ oplot,circx,circy,color=250
     endelse
 
   endif
- endfor
-
 endfor
+
+endif
+endfor
+
 
 return,fcube
 end

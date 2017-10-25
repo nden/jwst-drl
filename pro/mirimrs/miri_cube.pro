@@ -329,7 +329,7 @@ endfor
 ;newcen1=0.;0.14d / 3600.
 ;rad=sqrt((master_ra-newcen0)^2+(master_dec-newcen1)^2)*3600.
 ;newflux=1./(rad)
-;master_flux=newflux
+;master_flux=3.
 ;stop
 
 ; Safety case; deal with 0-360 range to ensure no problems
