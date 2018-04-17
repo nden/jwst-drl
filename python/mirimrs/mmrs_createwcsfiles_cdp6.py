@@ -192,10 +192,10 @@ def create_reffile_header(model, detector, band, channel, author, useafter,
     model.meta.exposure.type = "MIR_MRS"
 
     entry = HistoryEntry({'description': "DOCUMENT: MIRI-TN-00001-ETH_Iss2-1_Calibrationproduct_MRS_d2c.  New files created from CDP-6 with updated file structure and V2/V3 instead of XAN/YAN", 'time': datetime.datetime.utcnow()})
-    software = Software({'name': 'jwst-drl', 'author': 'D.Law', 
+    software = Software({'name': 'jwst-drl', 'author': 'D.Law',
                          'homepage': 'https://github.com/drlaw1558/jwst-drl', 'version': "master"})
     entry['software'] = software
-    model.history = [entry]
+    model.history['entries'] = [entry]
 
     return model
 

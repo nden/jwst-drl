@@ -266,7 +266,7 @@ def create_reffile_header(model):
     software = Software({'name': 'jwst-drl', 'author': 'D.Law',
                          'homepage': 'https://github.com/drlaw1558/jwst-drl', 'version': "master"})
     entry['software'] = software
-    model.history = [entry]
+    model.history['entries'] = [entry]
 
     return model
 
